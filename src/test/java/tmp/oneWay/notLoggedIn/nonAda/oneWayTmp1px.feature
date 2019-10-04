@@ -114,7 +114,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * def availability = response
      * print availability
 #     * print availability.outboundFares.Adult[0]
-     * def fares = availability.outboundFares.Adult[0]
+     * def fare = availability.outboundFares.Adult[0]
+     * json fares = fare
      * print fares
      * def fareId = fares.fareId
      * def type = fares.type
@@ -201,12 +202,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
                 "lastName": "Locey",
                 "email": "sbrooks@tdstickets.com",
                 "type": "Adult",
-                "outboundFare": {
-                    "fareId": "<fareId>",
-                    "type": "<type>",
-                    "passengerType": "<passengerType>",
-                    "amount": "<amount>"
-                 }
+                "outboundFare":
+                  <outboundFare>
               }
             ],
             "paymentInfo": {
@@ -221,17 +218,20 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
+
      * replace bookRequest.departDate = tomorrow
 #     * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
+     * set bookRequest.outboundFare = fares
      * replace bookRequest.total = total
      * replace bookRequest.token = token
-     * replace bookRequest.fareId = fareId
-     * replace bookRequest.type = type
-     * replace bookRequest.passengerType = passengerType
-     * replace bookRequest.amount = amount
+
+#     * replace bookRequest.fareId = fareId
+#     * replace bookRequest.type = type
+#     * replace bookRequest.passengerType = passengerType
+#     * replace bookRequest.amount = amount
 
      Given path 'book'
      And request bookRequest

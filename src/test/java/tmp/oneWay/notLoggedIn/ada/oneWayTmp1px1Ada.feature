@@ -1,8 +1,11 @@
 Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-    * url 'https://api.qa.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
+#    * url 'https://api.dev.tdstickets.com/ticketing/'
+    * url 'https://api2.stage.tdstickets.com/ticketing/'
+#    * url 'https://dev-api.peterpanbus.com/ticketing/'
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+#    * configure headers = { 'x-carrier': 'PPB', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -63,18 +66,30 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * print scheduleUuid
      * print departDate
 
+     Given path 'passenger/ada/options/1'
+     And request {}
+     When method get
+     Then status 200
+
+     * def adaOptions = response
+     * print adaOptions[0]
+     * json ada = adaOptions[0]
+
      * def availabilityRequest =
          """
          {
+          "adaOptions":
+           "<adaOptions>"
+          ,
           "outbound": {
              "carrierId": 1,
-             "scheduleUuid": "<scheduleUuid>",
-             "departDate": "<departDate>",
+             "scheduleUuid": <scheduleUuid>,
+             "departDate": <departDate>,
              "origin": {
                 "stopUuid": "<origin>"
             },
           "destination": {
-                "stopUuid": "<destination>"
+                "stopUuid": <destination>
             },
              "occurrence": 1
             },
@@ -95,7 +110,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             }
          }
          """
-
+     * set availabilityRequest.adaOptions = ada
+#     * replace availabilityRequest.departDate = tomorrow
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
@@ -152,15 +168,18 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
-     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
      * def token = response.token
      * print token
 
-
-     Given url 'https://api.qa.tdstickets.com/ticketing/'
+#     Given url 'https://api.dev.tdstickets.com/ticketing/'
+     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+#     Given url 'https://dev-api.peterpanbus.com/ticketing/'
 
      * def bookRequest =
           """
@@ -191,15 +210,12 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             },
             "passengers": [
               {
-                "firstName": "Patrick",
+                "firstName": "#(faker.name.firstName)",
                 "lastName": "Locey",
                 "email": "sbrooks@tdstickets.com",
                 "type": "Adult",
                 "outboundFare": {
-                    "fareId": "<fareId>",
-                    "type": "<type>",
-                    "passengerType": "<passengerType>",
-                    "amount": "<amount>"
+                    <fares>
                  }
               }
             ],
@@ -215,13 +231,14 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
-#     * replace bookRequest.departDate = tomorrow
-     * replace bookRequest.departDate = departDate
+     * replace bookRequest.departDate = tomorrow
+#     * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
+     * set bookRequest.fares = fares
      * replace bookRequest.fareId = fareId
      * replace bookRequest.type = type
      * replace bookRequest.passengerType = passengerType
