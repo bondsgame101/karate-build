@@ -114,14 +114,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * def availability = response
      * print availability
 #     * print availability.outboundFares.Adult[0]
-     * def fare = availability.outboundFares.Adult[0]
-     * print fare
-#     * def fareId = fares.fareId
-#     * def type = fares.type
-#     * def passengerType = fares.passengerType
-     * def amount = fare.amount
-     * json fares = fare
-#     * print fares
+     * def outboundFares = availability.outboundFares.Adult[0]
      * print amount
 #     * string stringFare = fares
 #     * def fareReplace = stringFare.replaceAll("\\{","")
@@ -224,16 +217,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           """
 
 #     * replace bookRequest.departDate = tomorrow
+     * set bookRequest.passengers[0].outboundFare = outboundFares
      * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
-     * replace bookRequest.fareId = fareId
-     * replace bookRequest.type = type
-     * replace bookRequest.passengerType = passengerType
-     * replace bookRequest.amount = amount
 
      Given path 'book'
      And request bookRequest
