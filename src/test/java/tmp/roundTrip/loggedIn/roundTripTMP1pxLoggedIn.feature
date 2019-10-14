@@ -29,6 +29,16 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     * def week = getDate("week")
 
   Scenario: A full purchase in TMP Dev
+#    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
+    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
+    Given path 'user/login'
+    And request {}
+    When method post
+    Then status 200
+
+    Given path 'customer/detail'
+    When method get
+    Then status 200
     Given path 'stop'
     And request { 'carrierId': 1, 'type': 'ORIGIN' }
     When method post
@@ -59,9 +69,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     Then status 200
 
     * def schedules = response
-#     * print schedules[0]
     * def scheduleUuid = schedules[0].scheduleUuid
-     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+    * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
     * print scheduleUuid
     * print departDate
 
@@ -145,6 +154,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     * def returnFares = availability.returnFares.Adult[0]
     * print outboundFares
     * print returnFares
+#     * print availability.total
     * def total = availability.total
 
     * def upg =
@@ -183,10 +193,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     * def token = response.token
     * print token
 
-#     Given url 'https://api.dev.tdstickets.com/ticketing/'
-#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-    Given url 'https://api.qa.tdstickets.com/ticketing/'
-
     * def bookRequest =
           """
           {
@@ -196,12 +202,12 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
                "departDate": "<departDate>",
                "origin": {
                   "stopUuid": "<origin>"
-              },
-            "destination": {
+               },
+                "destination": {
                   "stopUuid": "<destination>"
-              },
-               "occurrence": 1
-              },
+                },
+                "occurrence": 1
+            },
             "returning": {
                "carrierId": 1,
                "scheduleUuid": "<returnScheduleUuid>",
@@ -259,9 +265,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     * replace bookRequest.returnScheduleUuid = returnScheduleUuid
     * replace bookRequest.total = total
     * replace bookRequest.token = token
+
     * print bookRequest
 
-    Given path 'book'
+
+#     Given url 'https://api.dev.tdstickets.com/ticketing/'
+#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+    Given url 'https://api.qa.tdstickets.com/ticketing/book'
     And request bookRequest
     When method post
     Then status 200

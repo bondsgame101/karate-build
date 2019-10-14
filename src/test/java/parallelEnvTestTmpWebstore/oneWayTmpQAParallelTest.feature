@@ -1,8 +1,9 @@
 Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-    * url 'https://api.qa.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
+#    * url 'https://api.qa.tdstickets.com/ticketing/'
+    * url 'https://quasar-api.tdstickets.com/ticketing/'
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '8D238A87-F063-46B9-8D51-E0A2977B8C23', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -51,7 +52,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * print destination
 
      Given path 'schedule'
-     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(tomorrow)' }
+     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(week)' }
      When method post
      Then status 200
 
@@ -130,15 +131,15 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           {
            "agency" :
            {
-               "gateway": "AUTHORIZE",
-               "agency": "4249",
+               "gateway": "CARDCONNECT",
+               "agency": "189697",
                "country": "US"
            },
-             "accountNumber": "5123456789012346",
-             "securityCode": "123",
+             "accountNumber": "376759138081051",
+             "securityCode": "1384",
              "expirationMonth": "05",
-             "expirationYear": "21",
-             "nameOnCard": "Steven Brooks",
+             "expirationYear": "24",
+             "nameOnCard": "Terry Cordell",
              "address1": "9310 Old Kings Rd., Ste 401",
              "address2": "",
              "city": "Jacksonville",
@@ -146,13 +147,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
              "postalCode": "32257",
              "country": "US",
              "phone": "5555546855",
-             "email": "sbrooks@tdstickets.com",
+             "email": "khoehn@tdstickets.com",
              "ipAddress": "127.0.0.1",
              "fraudAlgorithm": ""
           }
           """
 
-     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
@@ -160,7 +161,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * print token
 
 
-     Given url 'https://api.qa.tdstickets.com/ticketing/'
+#     Given url 'https://api.qa.tdstickets.com/ticketing/'
+     Given url 'https://quasar-api.tdstickets.com/ticketing/'
 
      * def bookRequest =
           """
@@ -178,16 +180,16 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
                "occurrence": 1
               },
             "buyer": {
-              "firstName": "Patrick",
-              "lastName": "Locey",
-              "email": "sbrooks@tdstickets.com",
+              "firstName": "Terry",
+              "lastName": "Cordell",
+              "email": "khoehn@tdstickets.com",
               "phone": "(201) 543-9867",
               "mobile": "(908) 789-1234",
-              "address1": "123 Road St",
-              "address2": "Apt 101",
-              "city": "Citytown",
+              "address1": "9310 Old Kings Rd",
+              "address2": "Suite 310",
+              "city": "Jacksonville",
               "state": "FL",
-              "zip": "32222"
+              "zip": "32257"
             },
             "passengers": [
               {

@@ -3,9 +3,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
     * url 'https://api2.stage.tdstickets.com/ticketing/'
-#    * url 'https://dev-api.peterpanbus.com/ticketing/'
+#    * url 'https://api.qa.tdstickets.com/ticketing/'
     * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
-#    * configure headers = { 'x-carrier': 'PPB', 'Content-Type': 'application/json'}
+#    * configure headers = { ''TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -110,7 +110,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             }
          }
          """
-     * set availabilityRequest.adaOptions = ada
+     * set availabilityRequest.adaOptions[0] = ada
 #     * replace availabilityRequest.departDate = tomorrow
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
@@ -181,6 +181,12 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Given url 'https://api2.stage.tdstickets.com/ticketing/'
 #     Given url 'https://dev-api.peterpanbus.com/ticketing/'
 
+#     * def ada1 = function(o){return o}
+#     * def result = call ada1 ada
+#     * match result == ada
+#     * json adaPassenger = result
+#     * print adaPassenger
+
      * def bookRequest =
           """
           {
@@ -210,13 +216,19 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             },
             "passengers": [
               {
+                "adaOptions":
+                 "<adaOptions>"
+                ,
                 "firstName": "#(faker.name.firstName)",
                 "lastName": "Locey",
                 "email": "sbrooks@tdstickets.com",
                 "type": "Adult",
                 "outboundFare": {
-                    <fares>
-                 }
+                    "fareId": "<fareId>",
+                    "type": "<type>",
+                    "passengerType": "<passengerType>",
+                    "amount": "<amount>"
+                }
               }
             ],
             "paymentInfo": {
@@ -231,6 +243,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
+     * set bookRequest.passengers[0].adaOptions[0] = adaPassenger
      * replace bookRequest.departDate = tomorrow
 #     * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
@@ -238,7 +251,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
-     * set bookRequest.fares = fares
+#     * set bookRequest.fares = fares
      * replace bookRequest.fareId = fareId
      * replace bookRequest.type = type
      * replace bookRequest.passengerType = passengerType

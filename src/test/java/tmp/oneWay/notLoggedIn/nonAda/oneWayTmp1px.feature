@@ -98,8 +98,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             }
          }
          """
-     * replace availabilityRequest.departDate = tomorrow
-#     * replace availabilityRequest.departDate = departDate
+#     * replace availabilityRequest.departDate = tomorrow
+     * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
      * replace availabilityRequest.scheduleUuid = scheduleUuid
@@ -115,12 +115,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * print availability
 #     * print availability.outboundFares.Adult[0]
      * def fare = availability.outboundFares.Adult[0]
+     * print fare
+#     * def fareId = fares.fareId
+#     * def type = fares.type
+#     * def passengerType = fares.passengerType
+     * def amount = fare.amount
      * json fares = fare
-     * print fares
-     * def fareId = fares.fareId
-     * def type = fares.type
-     * def passengerType = fares.passengerType
-     * def amount = fares.amount
+#     * print fares
      * print amount
 #     * string stringFare = fares
 #     * def fareReplace = stringFare.replaceAll("\\{","")
@@ -202,8 +203,12 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
                 "lastName": "Locey",
                 "email": "sbrooks@tdstickets.com",
                 "type": "Adult",
-                "outboundFare":
-                  <outboundFare>
+                "outboundFare": {
+                  "fareId": "<fareId>",
+                  "type": "<type>",
+                  "passengerType": "<passengerType>",
+                  "amount": "<amount>"
+                }
               }
             ],
             "paymentInfo": {
@@ -218,20 +223,17 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
-
-     * replace bookRequest.departDate = tomorrow
-#     * replace bookRequest.departDate = departDate
+#     * replace bookRequest.departDate = tomorrow
+     * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
-     * set bookRequest.outboundFare = fares
      * replace bookRequest.total = total
      * replace bookRequest.token = token
-
-#     * replace bookRequest.fareId = fareId
-#     * replace bookRequest.type = type
-#     * replace bookRequest.passengerType = passengerType
-#     * replace bookRequest.amount = amount
+     * replace bookRequest.fareId = fareId
+     * replace bookRequest.type = type
+     * replace bookRequest.passengerType = passengerType
+     * replace bookRequest.amount = amount
 
      Given path 'book'
      And request bookRequest
