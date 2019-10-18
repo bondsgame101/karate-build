@@ -1,5 +1,6 @@
 function fn() {    
   var env = karate.env; // get system property 'karate.env'
+  var locale = Java.type('java.util.Locale')
   var faker = Java.type('com.github.javafaker.Faker');
 
 
@@ -13,6 +14,7 @@ function fn() {
   };
   if (env == 'dev'){
     config.faker = faker;
+    config.locale = locale;
   } else if (env == 'stage') {
     config.faker = faker;
     // customize

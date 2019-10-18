@@ -27,7 +27,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     """
     * def tomorrow = getDate("tomorrow")
     * print tomorrow
-    * def faker = new faker()
+    * print locale
+    * def faker = new faker(new locale("en_CA"))
+    * print faker
     * def week = getDate("week")
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
@@ -35,6 +37,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     * def address1 = faker.address().streetAddress()
     * def city = faker.address().city()
     * def state = faker.address().stateAbbr()
+    * def country = faker.address().country()
+    * print address1
+    * print city
+    * print state
+    * print zip
+    * print lastName
+    * print firstName
 
    Scenario: A full purchase in TMP Dev
      Given path 'stop'
@@ -94,7 +103,12 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             "lastName": "Locey",
             "email": "plocey@tdstickets.com",
             "phone": "(201) 543-9867",
-            "mobile": "(908) 789-1234"
+            "mobile": "(908) 789-1234",
+            "address1": "123 Road St",
+            "address2": "Apt 101",
+            "city": "Citytown",
+            "state": "FL",
+            "zip": "32222"
           },
           "passengerCounts": {
             "Adult": 1
@@ -103,10 +117,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
          }
          """
 #     * replace availabilityRequest.departDate = tomorrow
-     * set availabilityRequest.buyer.address1 = address1
-     * set availabilityRequest.buyer.city = city
-     * set availabilityRequest.buyer.state = state
-     * set availabilityRequest.buyer.zip = zip
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
@@ -148,10 +158,10 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
              "nameOnCard": "Steven Brooks",
              "address1": "9310 Old Kings Rd., Ste 401",
              "address2": "",
-             "city": "Jacksonville",
-             "state": "FL",
-             "postalCode": "32257",
-             "country": "US",
+             "city": "Laneburgh",
+             "state": "MB",
+             "postalCode": "K4B 3Z1",
+             "country": "CA",
              "phone": "5555546855",
              "email": "sbrooks@tdstickets.com",
              "ipAddress": "127.0.0.1",
@@ -201,7 +211,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
               }
             ],
             "paymentInfo": {
-              "country": "US",
+              "country": "CA",
               "amount": <total>,
               "token": "<token>",
               "transactionDate": 1559585242396,
