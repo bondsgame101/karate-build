@@ -2,10 +2,10 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
-    * url 'https://api2.stage.tdstickets.com/ticketing/'
-#    * url 'https://dev-api.peterpanbus.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
-#    * configure headers = { 'x-carrier': 'PPB', 'Content-Type': 'application/json'}
+#    * url 'https://api2.stage.tdstickets.com/ticketing/'
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
     * def getDate =
     """
     function(period) {
@@ -67,8 +67,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * def schedules = response
 #     * print schedules[0]
      * def scheduleUuid = schedules[0].scheduleUuid
-#     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
-     * def departDate = schedules[0].departTime
+     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+#     * def departDate = schedules[0].departTime
      * print scheduleUuid
      * print departDate
 
@@ -172,7 +172,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
 #     Given url 'https://api.dev.tdstickets.com/ticketing/'
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-     Given url 'https://dev-api.peterpanbus.com/ticketing/'
+     Given url 'https://api.qa.tdstickets.com/ticketing/'
 
      * def bookRequest =
           """

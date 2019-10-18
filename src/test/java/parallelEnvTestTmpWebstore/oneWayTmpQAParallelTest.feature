@@ -1,9 +1,10 @@
 Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-#    * url 'https://api.qa.tdstickets.com/ticketing/'
-    * url 'https://quasar-api.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '8D238A87-F063-46B9-8D51-E0A2977B8C23', 'Content-Type': 'application/json'}
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * url 'https://quasar-api.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '8D238A87-F063-46B9-8D51-E0A2977B8C23', 'Content-Type': 'application/json'} prod
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -161,8 +162,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * print token
 
 
-#     Given url 'https://api.qa.tdstickets.com/ticketing/'
-     Given url 'https://quasar-api.tdstickets.com/ticketing/'
+     Given url 'https://api.qa.tdstickets.com/ticketing/'
+#     Given url 'https://quasar-api.tdstickets.com/ticketing/'
 
      * def bookRequest =
           """

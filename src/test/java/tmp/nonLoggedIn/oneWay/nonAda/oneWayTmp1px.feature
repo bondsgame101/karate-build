@@ -2,10 +2,10 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
-    * url 'https://api2.stage.tdstickets.com/ticketing/'
-#    * url 'https://dev-api.peterpanbus.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
-#    * configure headers = { 'x-carrier': 'PPB', 'Content-Type': 'application/json'}
+#    * url 'https://api2.stage.tdstickets.com/ticketing/'
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -26,7 +26,22 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     }
     """
     * def tomorrow = getDate("tomorrow")
+    * print tomorrow
+    * def faker = new faker()
+    * print faker
     * def week = getDate("week")
+    * def firstName = faker.name().firstName()
+    * def lastName = faker.name().lastName()
+    * def zip = faker.address().zipCode()
+    * def address1 = faker.address().streetAddress()
+    * def city = faker.address().city()
+    * def state = faker.address().state()
+    * print address1
+    * print city
+    * print state
+    * print zip
+    * print lastName
+    * print firstName
 
    Scenario: A full purchase in TMP Dev
      Given path 'stop'
@@ -95,7 +110,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           },
           "passengerCounts": {
             "Adult": 1
-            }
+            },
+           "promoCode": "Bus20"
          }
          """
 #     * replace availabilityRequest.departDate = tomorrow
@@ -103,6 +119,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
      * replace availabilityRequest.scheduleUuid = scheduleUuid
+#     * replace availabilityRequest.firstName = firstName
 
      * print availabilityRequest
 
@@ -151,8 +168,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           """
 
 #     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
-     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-#     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
@@ -160,8 +177,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * print token
 
 #     Given url 'https://api.dev.tdstickets.com/ticketing/'
-     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-#     Given url 'https://dev-api.peterpanbus.com/ticketing/'
+#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+     Given url 'https://api.qa.tdstickets.com/ticketing/'
 
      * def bookRequest =
           """
@@ -212,7 +229,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
               "paymentMethod": "ONLINE",
               "createProfile": true
             },
-            "sendConfirmationEmail": true
+            "sendConfirmationEmail": true,
+            "promoCode": "Bus20"
           }
           """
 

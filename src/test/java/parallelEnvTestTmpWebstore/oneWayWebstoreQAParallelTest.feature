@@ -76,7 +76,7 @@ Scenario: Oneway Purchase
   * def scheduleResults = karate.filter(outboundSchedules, fareSearch)
 #  * print schedulesResults
   * def departKey = scheduleResults[0].key
-  * def departFareKey = scheduleResults[0].fares.flexFare.key
+  * def departFareKey = scheduleResults[0].fares.saverFare.key
 #  * print departKey
 #  * print departFareKey
 
