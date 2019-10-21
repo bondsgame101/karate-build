@@ -36,7 +36,7 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
     * def week = getDate("week")
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
+     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
      Given path 'user/login'
      And request {}
      When method post

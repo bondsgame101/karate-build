@@ -1,8 +1,11 @@
-Feature: Purchase a One Way ticket in TMP Stage logged in
+Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-    * url 'https://api2.stage.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+#    * url 'https://api.dev.tdstickets.com/ticketing/'
+#    * url 'https://api2.stage.tdstickets.com/ticketing/'
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -22,28 +25,23 @@ Feature: Purchase a One Way ticket in TMP Stage logged in
       return sdf.format(cal.getTime());
     }
     """
-    * def faker =
-    """
-    function(arg) {
-      var faker = Java.type('com.github.javafaker');
-      return faker;
-    }
-    """
-    * print faker
-
-
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
 
-   Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
+    * def faker = new faker()
+    * def firstName = faker.name().firstName()
+    * def lastName = faker.name().lastName()
+    * def zip = faker.address().zipCode()
+    * def address1 = faker.address().streetAddress()
+    * def city = faker.address().city()
+    * def state = faker.address().stateAbbr()
+
+
+  Scenario: A full purchase in TMP Dev
+     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
      Given path 'user/login'
      And request {}
      When method post
-     Then status 200
-
-     Given path 'customer/detail'
-     When method get
      Then status 200
 
      Given path 'stop'
@@ -79,21 +77,34 @@ Feature: Purchase a One Way ticket in TMP Stage logged in
 #     * print schedules[0]
      * def scheduleUuid = schedules[0].scheduleUuid
      * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+#     * def departDate = schedules[0].departTime
      * print scheduleUuid
      * print departDate
+
+     Given path 'passenger/ada/options/1'
+     And request {}
+     When method get
+     Then status 200
+
+     * def adaOptions = response
+     * print adaOptions[0]
+     * json ada = adaOptions[0]
 
      * def availabilityRequest =
          """
          {
+          "adaOptions":
+           "<adaOptions>"
+          ,
           "outbound": {
              "carrierId": 1,
-             "scheduleUuid": "<scheduleUuid>",
-             "departDate": "<departDate>",
+             "scheduleUuid": <scheduleUuid>,
+             "departDate": <departDate>,
              "origin": {
                 "stopUuid": "<origin>"
             },
           "destination": {
-                "stopUuid": "<destination>"
+                "stopUuid": <destination>
             },
              "occurrence": 1
             },
@@ -110,11 +121,13 @@ Feature: Purchase a One Way ticket in TMP Stage logged in
             "zip": "32222"
           },
           "passengerCounts": {
-            "Adult": 1
+            "Adult": 3
             }
          }
          """
-     * replace availabilityRequest.departDate = tomorrow
+     * set availabilityRequest.adaOptions[0] = ada
+#     * replace availabilityRequest.departDate = tomorrow
+     * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
      * replace availabilityRequest.scheduleUuid = scheduleUuid
@@ -129,18 +142,8 @@ Feature: Purchase a One Way ticket in TMP Stage logged in
      * def availability = response
      * print availability
 #     * print availability.outboundFares.Adult[0]
-     * def fares = availability.outboundFares.Adult[0]
-     * print fares
-     * def fareId = fares.fareId
-     * def type = fares.type
-     * def passengerType = fares.passengerType
-     * def amount = fares.amount
-     * print amount
-#     * string stringFare = fares
-#     * def fareReplace = stringFare.replaceAll("\\{","")
-#     * def fare = fareReplace.replaceAll("\\}","").trim()
-#     * print fare
-#     * print availability.total
+     * def outboundFares = availability.outboundFares.Adult[0]
+     * print outboundFares
      * def total = availability.total
 
      * def upg =
@@ -170,14 +173,22 @@ Feature: Purchase a One Way ticket in TMP Stage logged in
           }
           """
 
-     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
      * def token = response.token
      * print token
 
-     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+#     Given url 'https://api.dev.tdstickets.com/ticketing/'
+#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+     Given url 'https://api.qa.tdstickets.com/ticketing/'
+
+     * def passengerJson = function(i){ return { 'adaOptions': adaOptions[0], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def passengers = karate.repeat(3, passengerJson)
+     * print passengers
 
      * def bookRequest =
           """
@@ -199,49 +210,34 @@ Feature: Purchase a One Way ticket in TMP Stage logged in
               "lastName": "Locey",
               "email": "sbrooks@tdstickets.com",
               "phone": "(201) 543-9867",
-              "mobile": "(908) 789-1234",
-              "address1": "123 Road St",
-              "address2": "Apt 101",
-              "city": "Citytown",
-              "state": "FL",
-              "zip": "32222"
+              "mobile": "(908) 789-1234"
             },
-            "passengers": [
-              {
-                "firstName": "<#(faker.fake.firstName)>",
-                "lastName": "Locey",
-                "email": "sbrooks@tdstickets.com",
-                "type": "Adult",
-                "outboundFare": {
-                    "fareId": "<fareId>",
-                    "type": "<type>",
-                    "passengerType": "<passengerType>",
-                    "amount": "<amount>"
-                 }
-              }
-            ],
+            "passengers": [],
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
-              "createProfile": true
+              "createProfile": false
             },
             "sendConfirmationEmail": true
           }
           """
 
-     * replace bookRequest.departDate = tomorrow
+     * set bookRequest.buyer.address1 = address1
+     * set bookRequest.buyer.city = city
+     * set bookRequest.buyer.state = state
+     * set bookRequest.buyer.zip = zip
+     * set bookRequest.passengers = passengers
+     * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
-     * replace bookRequest.fareId = fareId
-     * replace bookRequest.type = type
-     * replace bookRequest.passengerType = passengerType
-     * replace bookRequest.amount = amount
+
+     * print bookRequest
 
      Given path 'book'
      And request bookRequest

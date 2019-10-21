@@ -27,8 +27,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     """
     * def tomorrow = getDate("tomorrow")
     * print tomorrow
-    * def faker = new faker()
     * def week = getDate("week")
+    * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
     * def zip = faker.address().zipCode()
@@ -43,7 +43,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def origins = response
-#     * print origins
      * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
@@ -55,7 +54,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def destinations = response
-#     * print destinations
      * def condition = function(x){ return x.stationName == 'Boston (Logan Airport)' }
      * def temp = karate.filter(origins, condition)
      * def destination = temp[0].stopUuid
@@ -67,7 +65,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def schedules = response
-#     * print schedules[0]
      * def scheduleUuid = schedules[0].scheduleUuid
      * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
 #     * def departDate = schedules[0].departTime
@@ -102,7 +99,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
            "promoCode": "Bus20"
          }
          """
-#     * replace availabilityRequest.departDate = tomorrow
+
      * set availabilityRequest.buyer.address1 = address1
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
@@ -111,7 +108,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
      * replace availabilityRequest.scheduleUuid = scheduleUuid
-#     * replace availabilityRequest.firstName = firstName
 
      * print availabilityRequest
 
@@ -122,14 +118,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
      * def availability = response
      * print availability
-#     * print availability.outboundFares.Adult[0]
      * def outboundFares = availability.outboundFares.Adult[0]
      * print amount
-#     * string stringFare = fares
-#     * def fareReplace = stringFare.replaceAll("\\{","")
-#     * def fare = fareReplace.replaceAll("\\}","").trim()
-#     * print fare
-#     * print availability.total
      * def total = availability.total
 
      * def upg =

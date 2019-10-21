@@ -27,6 +27,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     """
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
+    * def faker = new faker()
+    * def firstName = faker.name().firstName()
+    * def lastName = faker.name().lastName()
+    * def zip = faker.address().zipCode()
+    * def address1 = faker.address().streetAddress()
+    * def city = faker.address().city()
+    * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
      Given path 'stop'
@@ -98,12 +105,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             "lastName": "Locey",
             "email": "plocey@tdstickets.com",
             "phone": "(201) 543-9867",
-            "mobile": "(908) 789-1234",
-            "address1": "123 Road St",
-            "address2": "Apt 101",
-            "city": "Citytown",
-            "state": "FL",
-            "zip": "32222"
+            "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
             "Adult": 1
@@ -111,7 +113,10 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
          }
          """
      * set availabilityRequest.adaOptions[0] = ada
-#     * replace availabilityRequest.departDate = tomorrow
+     * set availabilityRequest.buyer.address1 = address1
+     * set availabilityRequest.buyer.city = city
+     * set availabilityRequest.buyer.state = state
+     * set availabilityRequest.buyer.zip = zip
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
@@ -126,19 +131,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
      * def availability = response
      * print availability
-#     * print availability.outboundFares.Adult[0]
-     * def fares = availability.outboundFares.Adult[0]
+     * def outboundFares = availability.outboundFares.Adult[0]
      * print fares
-     * def fareId = fares.fareId
-     * def type = fares.type
-     * def passengerType = fares.passengerType
-     * def amount = fares.amount
-     * print amount
-#     * string stringFare = fares
-#     * def fareReplace = stringFare.replaceAll("\\{","")
-#     * def fare = fareReplace.replaceAll("\\}","").trim()
-#     * print fare
-#     * print availability.total
      * def total = availability.total
 
      * def upg =
@@ -180,13 +174,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api.dev.tdstickets.com/ticketing/'
      Given url 'https://api2.stage.tdstickets.com/ticketing/'
 #     Given url 'https://dev-api.peterpanbus.com/ticketing/'
-
-#     * def ada1 = function(o){return o}
-#     * def result = call ada1 ada
-#     * match result == ada
-#     * json adaPassenger = result
-#     * print adaPassenger
-
      * def bookRequest =
           """
           {
@@ -207,28 +194,15 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
               "lastName": "Locey",
               "email": "sbrooks@tdstickets.com",
               "phone": "(201) 543-9867",
-              "mobile": "(908) 789-1234",
-              "address1": "123 Road St",
-              "address2": "Apt 101",
-              "city": "Citytown",
-              "state": "FL",
-              "zip": "32222"
+              "mobile": "(908) 789-1234"
             },
             "passengers": [
               {
                 "adaOptions":
                  "<adaOptions>"
                 ,
-                "firstName": "#(faker.name.firstName)",
-                "lastName": "Locey",
                 "email": "sbrooks@tdstickets.com",
-                "type": "Adult",
-                "outboundFare": {
-                    "fareId": "<fareId>",
-                    "type": "<type>",
-                    "passengerType": "<passengerType>",
-                    "amount": "<amount>"
-                }
+                "type": "Adult"
               }
             ],
             "paymentInfo": {
@@ -243,19 +217,21 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
-     * set bookRequest.passengers[0].adaOptions[0] = adaPassenger
-     * replace bookRequest.departDate = tomorrow
-#     * replace bookRequest.departDate = departDate
+     * set bookRequest.passengers[0].adaOptions[0] = ada
+     * set bookRequest.buyer.address1 = address1
+     * set bookRequest.buyer.city = city
+     * set bookRequest.buyer.state = state
+     * set bookRequest.buyer.zip = zip
+     * set bookRequest.passengers[0].firstName = firstName
+     * set bookRequest.passengers[0].lastName = lastName
+     * set bookRequest.passengers[0].outboundFare = outboundFares
+     * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
-#     * set bookRequest.fares = fares
-     * replace bookRequest.fareId = fareId
-     * replace bookRequest.type = type
-     * replace bookRequest.passengerType = passengerType
-     * replace bookRequest.amount = amount
+
 
      Given path 'book'
      And request bookRequest
