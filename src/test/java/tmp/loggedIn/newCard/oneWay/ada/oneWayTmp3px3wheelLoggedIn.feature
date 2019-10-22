@@ -27,7 +27,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     """
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
-
     * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
@@ -186,7 +185,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
-     * def passengerJson = function(i){ return { 'adaOptions': adaOptions[0], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
      * def passengers = karate.repeat(3, passengerJson)
      * print passengers
 

@@ -1,11 +1,11 @@
 Feature: Purchase a One Way ticket in Webstore Stage not logged in
 
 Background:
-  * url 'https://api.dev.tdstickets.com/webstore/'
+#  * url 'https://api.dev.tdstickets.com/webstore/'
 #  * url 'https://api2.stage.tdstickets.com/webstore/'
-#  * url 'https://api.qa.tdstickets.com/webstore/'
-  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
-#  * configure headers = { 'x-agency-id': 'c6ebc417d3ec11e4b6f757d6b72f2478', 'Content-Type': 'application/json'}
+  * url 'https://api.qa.tdstickets.com/webstore/'
+#  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
+  * configure headers = { 'x-agency-id': 'c6ebc417d3ec11e4b6f757d6b72f2478', 'Content-Type': 'application/json'}
   * def getDate =
     """
     function(period) {
@@ -125,18 +125,18 @@ Scenario: Oneway Purchase
     }
     """
 
-  Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#  Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
 #  Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-#  Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+  Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
   And request upg
   When method post
   Then status 200
   * def token = response.token
 #  * print token
 
-  Given url 'https://api.dev.tdstickets.com/webstore/'
+#  Given url 'https://api.dev.tdstickets.com/webstore/'
 #  Given url 'https://api2.stage.tdstickets.com/webstore/'
-#  Given url 'https://api.qa.tdstickets.com/webstore/'
+  Given url 'https://api.qa.tdstickets.com/webstore/'
 
   * def bookRequest =
     """

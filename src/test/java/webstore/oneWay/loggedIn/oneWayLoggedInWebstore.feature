@@ -1,12 +1,12 @@
 Feature: Purchase a One Way ticket in Webstore Stage logged in
 
 Background:
-  * url 'https://api.dev.tdstickets.com/webstore/'
+#  * url 'https://api.dev.tdstickets.com/webstore/'
 #  * url 'https://api2.stage.tdstickets.com/webstore/'
-#  * url 'https://api.qa.tdstickets.com/webstore/'
+  * url 'https://api.qa.tdstickets.com/webstore/'
 #  * url 'https://api.trailwaysny.com/webstore/'
-  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
-#  * configure headers = { 'x-agency-id': 'c6ebc417d3ec11e4b6f757d6b72f2478', 'Content-Type': 'application/json'}
+#  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
+  * configure headers = { 'x-agency-id': 'c6ebc417d3ec11e4b6f757d6b72f2478', 'Content-Type': 'application/json'}
 #  * configure headers = { 'x-agency-id': '17cc512e2b6411e8a467abe441b24777', 'Content-Type': 'application/json'}
 #    * configure headers = { 'x-agency-id': '7c15f5050e0f11e58956b71fbc4c05e7', 'Content-Type': 'application/json'} Prod
   * def getDate =
@@ -135,9 +135,9 @@ Scenario: Oneway Purchase
     }
     """
 
-  Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#  Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
 #  Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-#  Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+  Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
 #  Given url 'https://upg.tdstickets.com/tokenizer/v1/generate/card'
   And request upg
   When method post
@@ -145,9 +145,9 @@ Scenario: Oneway Purchase
   * def token = response.token
 #  * print token
 
-  Given url 'https://api.dev.tdstickets.com/webstore/'
+#  Given url 'https://api.dev.tdstickets.com/webstore/'
 #  Given url 'https://api2.stage.tdstickets.com/webstore/'
-#  Given url 'https://api.qa.tdstickets.com/webstore/'
+  Given url 'https://api.qa.tdstickets.com/webstore/'
 #  Given url 'https://api.trailwaysny.com/webstore/'
 
   * def bookRequest =

@@ -1,8 +1,11 @@
-Feature: Purchase a One Way ticket in TMP Dev logged in
+Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-    * url 'https://api.dev.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+#    * url 'https://api.dev.tdstickets.com/ticketing/'
+#    * url 'https://api2.stage.tdstickets.com/ticketing/'
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -22,28 +25,25 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
       return sdf.format(cal.getTime());
     }
     """
-    * def faker =
-    """
-    function(arg) {
-      var faker = Java.type('com.github.javafaker');
-      return faker;
-    }
-    """
-    * print faker
 
-
+    * def today = getDate("today")
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
+    * def faker = new faker()
+    * def firstName = faker.name().firstName()
+    * def lastName = faker.name().lastName()
+    * def zip = faker.address().zipCode()
+    * def address1 = faker.address().streetAddress()
+    * def city = faker.address().city()
+    * def state = faker.address().stateAbbr()
+    * def randomDate = faker.date().between("#(today)", "#(week)")
+    * print randomDate
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
+     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
      Given path 'user/login'
      And request {}
      When method post
-     Then status 200
-
-     Given path 'customer/detail'
-     When method get
      Then status 200
 
      Given path 'stop'
@@ -52,7 +52,6 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
      Then status 200
 
      * def origins = response
-#     * print origins
      * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
@@ -64,7 +63,6 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
      Then status 200
 
      * def destinations = response
-#     * print destinations
      * def condition = function(x){ return x.stationName == 'Boston (Logan Airport)' }
      * def temp = karate.filter(origins, condition)
      * def destination = temp[0].stopUuid
@@ -76,27 +74,63 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
      Then status 200
 
      * def schedules = response
-#     * print schedules[0]
      * def scheduleUuid = schedules[0].scheduleUuid
      * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+#     * def departDate = schedules[0].departTime
      * print scheduleUuid
      * print departDate
+
+     Given path 'schedule'
+     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(destination)' }, 'destination': { 'stopUuid': '#(origin)' }, 'departDate': '#(week)' }
+     When method post
+     Then status 200
+
+     * def returnSchedules = response
+#     * print schedules[0]
+     * def returnScheduleUuid = returnSchedules[0].scheduleUuid
+     * def returnDepartDate = returnSchedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+     * print returnScheduleUuid
+     * print returnDepartDate
+
+     Given path 'passenger/ada/options/1'
+     And request {}
+     When method get
+     Then status 200
+
+     * def adaOptions = response
+     * print adaOptions[0]
+     * json ada = adaOptions[0]
 
      * def availabilityRequest =
          """
          {
+          "adaOptions":
+           "<adaOptions>"
+          ,
           "outbound": {
              "carrierId": 1,
-             "scheduleUuid": "<scheduleUuid>",
-             "departDate": "<departDate>",
+             "scheduleUuid": <scheduleUuid>,
+             "departDate": <departDate>,
              "origin": {
-                "stopUuid": "<origin>"
+                "stopUuid": <origin>
             },
           "destination": {
-                "stopUuid": "<destination>"
+                "stopUuid": <destination>
             },
              "occurrence": 1
             },
+          "returning": {
+             "carrierId": 1,
+             "scheduleUuid": <returnScheduleUuid>,
+             "departDate": <returnDepartDate>,
+             "origin": {
+               "stopUuid": <returnOrigin>
+             },
+             "occurrence": 1,
+             "destination": {
+               "stopUuid": <returnDestination>
+             }
+          },
           "buyer": {
             "firstName": "Patrick",
             "lastName": "Locey",
@@ -109,15 +143,19 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
             }
          }
          """
-
      * set availabilityRequest.buyer.address1 = address1
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
      * set availabilityRequest.buyer.zip = zip
-     * replace availabilityRequest.departDate = tomorrow
+     * set availabilityRequest.adaOptions[0] = ada
+     * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
      * replace availabilityRequest.scheduleUuid = scheduleUuid
+     * replace availabilityRequest.returnDepartDate = returnDepartDate
+     * replace availabilityRequest.returnDestination = origin
+     * replace availabilityRequest.returnOrigin = destination
+     * replace availabilityRequest.returnScheduleUuid = returnScheduleUuid
 
      * print availabilityRequest
 
@@ -128,9 +166,10 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
 
      * def availability = response
      * print availability
-#     * print availability.outboundFares.Adult[0]
      * def outboundFares = availability.outboundFares.Adult[0]
+     * def returnFares = availability.returnFares.Adult[0]
      * print outboundFares
+     * print returnFares
      * def total = availability.total
 
      * def upg =
@@ -160,15 +199,18 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
           }
           """
 
-     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
      * def token = response.token
      * print token
 
-     Given url 'https://api.dev.tdstickets.com/ticketing/'
-
+#     Given url 'https://api.dev.tdstickets.com/ticketing/'
+#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+     Given url 'https://api.qa.tdstickets.com/ticketing/'
      * def bookRequest =
           """
           {
@@ -184,12 +226,29 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
               },
                "occurrence": 1
               },
+            "returning": {
+               "carrierId": 1,
+               "scheduleUuid": "<returnScheduleUuid>",
+               "departDate": "<returnDepartDate>",
+               "origin": {
+                  "stopUuid": "<returnOrigin>"
+               },
+                "destination": {
+                  "stopUuid": "<returnDestination>"
+                },
+                "occurrence": 1
+            },
             "buyer": {
               "firstName": "Patrick",
               "lastName": "Locey",
               "email": "sbrooks@tdstickets.com",
               "phone": "(201) 543-9867",
-              "mobile": "(908) 789-1234"
+              "mobile": "(908) 789-1234",
+              "address1": "123 Road St",
+              "address2": "Apt 101",
+              "city": "Citytown",
+              "state": "FL",
+              "zip": "32222"
             },
             "passengers": [
               {
@@ -221,6 +280,10 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
+     * replace bookRequest.returnDepartDate = returnDepartDate
+     * replace bookRequest.returnDestination = origin
+     * replace bookRequest.returnOrigin = destination
+     * replace bookRequest.returnScheduleUuid = returnScheduleUuid
      * replace bookRequest.total = total
      * replace bookRequest.token = token
 

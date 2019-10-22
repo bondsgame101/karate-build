@@ -27,6 +27,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     """
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
+    * def faker = new faker()
+    * def firstName = faker.name().firstName()
+    * def lastName = faker.name().lastName()
+    * def zip = faker.address().zipCode()
+    * def address1 = faker.address().streetAddress()
+    * def city = faker.address().city()
+    * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
      * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
