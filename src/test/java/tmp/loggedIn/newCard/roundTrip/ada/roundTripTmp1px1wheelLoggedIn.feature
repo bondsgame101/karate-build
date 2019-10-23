@@ -1,4 +1,4 @@
-Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a Round Trip 1 Passenger 1 Wheelchair ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -36,8 +36,6 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     * def address1 = faker.address().streetAddress()
     * def city = faker.address().city()
     * def state = faker.address().stateAbbr()
-    * def randomDate = faker.date().between("#(today)", "#(week)")
-    * print randomDate
 
    Scenario: A full purchase in TMP Dev
      * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
@@ -52,7 +50,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def origins = response
-     * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
+     * def condition = function(x){ return x.stationName == 'Amherst Center' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
      * print origin
@@ -74,8 +72,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def schedules = response
-     * def scheduleUuid = schedules[0].scheduleUuid
-     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+     * def scheduleUuid = schedules[1].scheduleUuid
+     * def departDate = schedules[1].departTime.substring(0, schedules[1].departTime.lastIndexOf('T'))
 #     * def departDate = schedules[0].departTime
      * print scheduleUuid
      * print departDate
@@ -87,8 +85,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
      * def returnSchedules = response
 #     * print schedules[0]
-     * def returnScheduleUuid = returnSchedules[0].scheduleUuid
-     * def returnDepartDate = returnSchedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+     * def returnScheduleUuid = returnSchedules[1].scheduleUuid
+     * def returnDepartDate = returnSchedules[1].departTime.substring(0, schedules[1].departTime.lastIndexOf('T'))
      * print returnScheduleUuid
      * print returnDepartDate
 
@@ -211,6 +209,11 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api.dev.tdstickets.com/ticketing/'
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
+
+     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
+     * def passengers = karate.repeat(1, passengerJson)
+     * print passengers
+
      * def bookRequest =
           """
           {
@@ -243,19 +246,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
               "lastName": "Locey",
               "email": "sbrooks@tdstickets.com",
               "phone": "(201) 543-9867",
-              "mobile": "(908) 789-1234",
-              "address1": "123 Road St",
-              "address2": "Apt 101",
-              "city": "Citytown",
-              "state": "FL",
-              "zip": "32222"
+              "mobile": "(908) 789-1234"
             },
-            "passengers": [
-              {
-                "email": "sbrooks@tdstickets.com",
-                "type": "Adult"
-              }
-            ],
+            "passengers": [],
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
@@ -272,14 +265,11 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * set bookRequest.buyer.city = city
      * set bookRequest.buyer.state = state
      * set bookRequest.buyer.zip = zip
-     * set bookRequest.passengers[0].firstName = firstName
-     * set bookRequest.passengers[0].lastName = lastName
-     * set bookRequest.passengers[0].outboundFare = outboundFares
-     * set bookRequest.passengers[0].adaOptions[0] = ada
+     * set bookRequest.passengers = passengers
      * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
-     * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
+     * replace bookRequest.destination = destination
      * replace bookRequest.returnDepartDate = returnDepartDate
      * replace bookRequest.returnDestination = origin
      * replace bookRequest.returnOrigin = destination

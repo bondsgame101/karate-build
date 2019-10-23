@@ -1,4 +1,4 @@
-Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -50,7 +50,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
      * def origins = response
 #     * print origins
-     * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
+     * def condition = function(x){ return x.stationName == 'Amherst UMass' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
      * print origin
@@ -80,6 +80,11 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * print scheduleUuid
      * print departDate
 
+    Given path 'schedule'
+    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(destination)' }, 'destination': { 'stopUuid': '#(origin)' }, 'departDate': '#(week)' }
+    When method post
+    Then status 200
+
     * def returnSchedules = response
 #     * print schedules[0]
     * def returnScheduleUuid = returnSchedules[0].scheduleUuid
@@ -92,14 +97,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     When method get
     Then status 200
 
-     Given path 'passenger/ada/options/1'
-     And request {}
-     When method get
-     Then status 200
-
-     * def adaOptions = response
-     * print adaOptions[0]
-     * json ada = adaOptions[0]
+    * def adaOptions = response
+    * print adaOptions[0]
+    * json ada = adaOptions[0]
 
      * def availabilityRequest =
          """
@@ -130,7 +130,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
              "destination": {
                "stopUuid": "<returnDestination>"
              }
-          }
+          },
           "buyer": {
             "firstName": "Patrick",
             "lastName": "Locey",
@@ -209,7 +209,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
-     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
      * def passengers = karate.repeat(3, passengerJson)
      * print passengers
 
@@ -281,7 +281,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Given path 'book'
      And request bookRequest
      When method post
-     Then status 200
+     Then status 400
 
      * def book = response
      * print book

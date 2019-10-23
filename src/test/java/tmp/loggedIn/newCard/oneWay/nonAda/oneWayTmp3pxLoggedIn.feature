@@ -1,4 +1,4 @@
-Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -99,19 +99,17 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             "lastName": "Locey",
             "email": "plocey@tdstickets.com",
             "phone": "(201) 543-9867",
-            "mobile": "(908) 789-1234",
-            "address1": "123 Road St",
-            "address2": "Apt 101",
-            "city": "Citytown",
-            "state": "FL",
-            "zip": "32222"
+            "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
             "Adult": 3
             }
          }
          """
-#     * replace availabilityRequest.departDate = tomorrow
+     * set availabilityRequest.buyer.address1 = address1
+     * set availabilityRequest.buyer.city = city
+     * set availabilityRequest.buyer.state = state
+     * set availabilityRequest.buyer.zip = zip
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
@@ -127,18 +125,8 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      * def availability = response
      * print availability
 #     * print availability.outboundFares.Adult[0]
-     * def fares = availability.outboundFares.Adult[0]
-     * print fares
-     * def fareId = fares.fareId
-     * def type = fares.type
-     * def passengerType = fares.passengerType
-     * def amount = fares.amount
-     * print amount
-#     * string stringFare = fares
-#     * def fareReplace = stringFare.replaceAll("\\{","")
-#     * def fare = fareReplace.replaceAll("\\}","").trim()
-#     * print fare
-#     * print availability.total
+     * def outboundFares = availability.outboundFares.Adult[0]
+     * print outboundFares
      * def total = availability.total
 
      * def upg =
@@ -181,6 +169,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
+     * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def passengers = karate.repeat(3, passengerJson)
+
      * def bookRequest =
           """
           {
@@ -201,51 +192,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
               "lastName": "Locey",
               "email": "sbrooks@tdstickets.com",
               "phone": "(201) 543-9867",
-              "mobile": "(908) 789-1234",
-              "address1": "123 Road St",
-              "address2": "Apt 101",
-              "city": "Citytown",
-              "state": "FL",
-              "zip": "32222"
+              "mobile": "(908) 789-1234"
             },
-            "passengers": [
-              {
-                "firstName": "#(faker.name.firstName)",
-                "lastName": "Locey",
-                "email": "sbrooks@tdstickets.com",
-                "type": "Adult",
-                "outboundFare": {
-                    "fareId": "<fareId>",
-                    "type": "<type>",
-                    "passengerType": "<passengerType>",
-                    "amount": "<amount>"
-                 }
-                },
-                 {
-                "firstName": "#(faker.name.firstName)",
-                "lastName": "Locey",
-                "email": "sbrooks@tdstickets.com",
-                "type": "Adult",
-                "outboundFare": {
-                    "fareId": "<fareId>",
-                    "type": "<type>",
-                    "passengerType": "<passengerType>",
-                    "amount": "<amount>"
-                  }
-                 },
-                 {
-                "firstName": "#(faker.name.firstName)",
-                "lastName": "Locey",
-                "email": "sbrooks@tdstickets.com",
-                "type": "Adult",
-                "outboundFare": {
-                    "fareId": "<fareId>",
-                    "type": "<type>",
-                    "passengerType": "<passengerType>",
-                    "amount": "<amount>"
-                 }
-                }
-            ],
+            "passengers": [],
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
@@ -258,17 +207,17 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
-#     * replace bookRequest.departDate = tomorrow
+     * set bookRequest.buyer.address1 = address1
+     * set bookRequest.buyer.city = city
+     * set bookRequest.buyer.state = state
+     * set bookRequest.buyer.zip = zip
+     * set bookRequest.passengers = passengers
      * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
-     * replace bookRequest.fareId = fareId
-     * replace bookRequest.type = type
-     * replace bookRequest.passengerType = passengerType
-     * replace bookRequest.amount = amount
 
      Given path 'book'
      And request bookRequest

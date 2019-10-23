@@ -1,4 +1,4 @@
-Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 5 Passenger 2 Wheelchair ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -50,7 +50,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
      * def origins = response
 #     * print origins
-     * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
+     * def condition = function(x){ return x.stationName == 'Everett' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
      * print origin
@@ -112,20 +112,18 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
             "lastName": "Locey",
             "email": "plocey@tdstickets.com",
             "phone": "(201) 543-9867",
-            "mobile": "(908) 789-1234",
-            "address1": "123 Road St",
-            "address2": "Apt 101",
-            "city": "Citytown",
-            "state": "FL",
-            "zip": "32222"
+            "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
             "Adult": 5
             }
          }
          """
+     * set availabilityRequest.buyer.address1 = address1
+     * set availabilityRequest.buyer.city = city
+     * set availabilityRequest.buyer.state = state
+     * set availabilityRequest.buyer.zip = zip
      * set availabilityRequest.adaOptions[0] = ada
-#     * replace availabilityRequest.departDate = tomorrow
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
