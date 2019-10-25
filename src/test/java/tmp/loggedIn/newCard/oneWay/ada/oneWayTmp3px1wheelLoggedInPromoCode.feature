@@ -6,7 +6,7 @@ Feature: Purchase a One Way 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA 
     * url 'https://api.qa.tdstickets.com/ticketing/'
 #    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
     * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
-    * def getDate =
+     * def getDate =
     """
     function(period) {
       var SimpleDateFormat = Java.type('java.text.SimpleDateFormat');
@@ -31,8 +31,27 @@ Feature: Purchase a One Way 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA 
       return sdf.format(cal.getTime());
     }
     """
-    * def tomorrow = getDate("tomorrow")
-    * def week = getDate("week")
+
+     * def getRandomInt =
+     """
+    function(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+    """
+
+     * def randomSchedule =
+     """
+     function(list) {
+       var random = getRandomInt(list.length)
+       return list[random]
+     }
+     """
+
+     * def today = getDate("today")
+     * def tomorrow = getDate("tomorrow")
+     * def week = getDate("week")
+     * def randomDepart = getDate("randDepart")
+     * def randomReturn = getDate("randReturn")
     * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
@@ -74,17 +93,17 @@ Feature: Purchase a One Way 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA 
      * print destination
 
      Given path 'schedule'
-     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(tomorrow)' }
+     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(randomDepart)' }
      When method post
      Then status 200
 
      * def schedules = response
-#     * print schedules[0]
-     * def scheduleUuid = schedules[0].scheduleUuid
-     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
-#     * def departDate = schedules[0].departTime
-     * print scheduleUuid
-     * print departDate
+    * def selectedSchedule = randomSchedule(schedules)
+    * print selectedSchedule
+    * def scheduleUuid = selectedSchedule.scheduleUuid
+    * def departDate = selectedSchedule.departTime.substring(0, selectedSchedule.departTime.lastIndexOf('T'))
+    * print scheduleUuid
+    * print departDate
 
      Given path 'passenger/ada/options/1'
      And request {}
@@ -190,8 +209,11 @@ Feature: Purchase a One Way 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA 
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
-     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
-     * def passengers = karate.repeat(3, passengerJson)
+     * def adaPassengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
+     * def adaPassengers = karate.repeat(1, adaPassengerJson)
+     * def regPassengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
+     * def regPassengers = karate.repeat(2, regPassengerJson)
+     * def passengers = karate.append(adaPassengers, regPassengers)
      * print passengers
 
      * def bookRequest =

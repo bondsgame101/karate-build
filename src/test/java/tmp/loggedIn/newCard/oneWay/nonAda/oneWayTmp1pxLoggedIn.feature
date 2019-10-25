@@ -31,8 +31,26 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
       return sdf.format(cal.getTime());
     }
     """
+    * def getRandomInt =
+    """
+    function(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+    """
+
+    * def randomSchedule =
+     """
+     function(list) {
+       var random = getRandomInt(list.length)
+       return list[random]
+     }
+     """
+
+    * def today = getDate("today")
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
+    * def randomDepart = getDate("randDepart")
+    * def randomReturn = getDate("randReturn")
     * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
