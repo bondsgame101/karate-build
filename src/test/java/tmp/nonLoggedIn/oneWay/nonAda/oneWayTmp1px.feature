@@ -1,17 +1,19 @@
-Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
 #    * url 'https://api2.stage.tdstickets.com/ticketing/'
     * url 'https://api.qa.tdstickets.com/ticketing/'
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
     * def getDate =
     """
     function(period) {
       var SimpleDateFormat = Java.type('java.text.SimpleDateFormat');
       var Calendar = Java.type('java.util.Calendar');
       var sdf = new SimpleDateFormat('yyyy-MM-dd');
+      var random_one = Math.floor(Math.random() * 10) + 2;
+      var random_two = Math.floor(Math.random() * 10) + 12;
       cal = Calendar.getInstance();
       if (period == "tomorrow") {
         cal.add(Calendar.DATE, 1);
@@ -19,14 +21,17 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
        else if (period == "today") {
         cal.add(Calendar.DATE, 0);
       }
-       else {
+       else if (period == "week") {
         cal.add(Calendar.DATE, 7)
+      } else if (period == "randDepart") {
+        cal.add(Calendar.DATE, random_one)
+      } else if (period == "randReturn") {
+        cal.add(Calendar.DATE, random_two)
       }
       return sdf.format(cal.getTime());
     }
     """
     * def tomorrow = getDate("tomorrow")
-    * print tomorrow
     * def week = getDate("week")
     * def faker = new faker()
     * def firstName = faker.name().firstName()
@@ -37,12 +42,19 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
     * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
+     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
+     Given path 'user/login'
+     And request {}
+     When method post
+     Then status 200
+
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
      When method post
      Then status 200
 
      * def origins = response
+#     * print origins
      * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
@@ -54,6 +66,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def destinations = response
+#     * print destinations
      * def condition = function(x){ return x.stationName == 'Boston (Logan Airport)' }
      * def temp = karate.filter(origins, condition)
      * def destination = temp[0].stopUuid
@@ -65,6 +78,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def schedules = response
+#     * print schedules[0]
      * def scheduleUuid = schedules[0].scheduleUuid
      * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
 #     * def departDate = schedules[0].departTime
@@ -95,8 +109,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
           },
           "passengerCounts": {
             "Adult": 1
-            },
-           "promoCode": "Bus20"
+            }
          }
          """
 
@@ -118,8 +131,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
      * def availability = response
      * print availability
+#     * print availability.outboundFares.Adult[0]
      * def outboundFares = availability.outboundFares.Adult[0]
-     * print amount
+     * print outboundFares
      * def total = availability.total
 
      * def upg =
@@ -135,7 +149,7 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
              "securityCode": "123",
              "expirationMonth": "05",
              "expirationYear": "21",
-             "nameOnCard": "Steven Brooks",
+             "nameOnCard": "#(faker.name().fullName())",
              "address1": "9310 Old Kings Rd., Ste 401",
              "address2": "",
              "city": "Jacksonville",
@@ -162,6 +176,9 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
+     * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def passengers = karate.repeat(1, passengerJson)
+
      * def bookRequest =
           """
           {
@@ -178,18 +195,13 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
                "occurrence": 1
               },
             "buyer": {
-              "firstName": "Patrick",
-              "lastName": "Locey",
+              "firstName": "#(faker.name().firstName())",
+              "lastName": "#(faker.name().lastName())",
               "email": "sbrooks@tdstickets.com",
               "phone": "(201) 543-9867",
               "mobile": "(908) 789-1234"
-             },
-            "passengers": [
-              {
-                "email": "sbrooks@tdstickets.com",
-                "type": "Adult",
-              }
-            ],
+            },
+            "passengers": [],
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
@@ -198,19 +210,15 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
               "paymentMethod": "ONLINE",
               "createProfile": true
             },
-            "sendConfirmationEmail": true,
-            "promoCode": "Bus20"
+            "sendConfirmationEmail": true
           }
           """
 
-#     * replace bookRequest.departDate = tomorrow
      * set bookRequest.buyer.address1 = address1
      * set bookRequest.buyer.city = city
      * set bookRequest.buyer.state = state
      * set bookRequest.buyer.zip = zip
-     * set bookRequest.passengers[0].firstName = firstName
-     * set bookRequest.passengers[0].lastName = lastName
-     * set bookRequest.passengers[0].outboundFare = outboundFares
+     * set bookRequest.passengers = passengers
      * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
@@ -225,3 +233,5 @@ Feature: Purchase a One Way ticket in TMP Dev/Stage/QA not logged in
 
      * def book = response
      * print book
+
+

@@ -1,4 +1,4 @@
-Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -56,7 +56,7 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
      * def origins = response
 #     * print origins
-     * def condition = function(x){ return x.stationName == 'Amherst UMass' }
+     * def condition = function(x){ return x.stationName == 'Bourne' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
      * print origin
@@ -86,26 +86,14 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      * print scheduleUuid
      * print departDate
 
-    Given path 'schedule'
-    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(destination)' }, 'destination': { 'stopUuid': '#(origin)' }, 'departDate': '#(week)' }
-    When method post
-    Then status 200
+     Given path 'passenger/ada/options/1'
+     And request {}
+     When method get
+     Then status 200
 
-    * def returnSchedules = response
-#     * print schedules[0]
-    * def returnScheduleUuid = returnSchedules[0].scheduleUuid
-    * def returnDepartDate = returnSchedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
-    * print returnScheduleUuid
-    * print returnDepartDate
-
-    Given path 'passenger/ada/options/1'
-    And request {}
-    When method get
-    Then status 200
-
-    * def adaOptions = response
-    * print adaOptions[0]
-    * json ada = adaOptions[0]
+     * def adaOptions = response
+     * print adaOptions[0]
+     * json ada = adaOptions[0]
 
      * def availabilityRequest =
          """
@@ -125,18 +113,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
             },
              "occurrence": 1
             },
-          "returning": {
-             "carrierId": 1,
-             "scheduleUuid": "<returnScheduleUuid>",,
-             "departDate": "<returnDepartDate>",
-             "origin": {
-               "stopUuid": "<returnOrigin>"
-             },
-             "occurrence": 1,
-             "destination": {
-               "stopUuid": "<returnDestination>"
-             }
-          },
           "buyer": {
             "firstName": "Patrick",
             "lastName": "Locey",
@@ -149,7 +125,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
             }
          }
          """
-
      * set availabilityRequest.buyer.address1 = address1
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
@@ -169,53 +144,21 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
      * def availability = response
      * print availability
+#     * print availability.outboundFares.Adult[0]
      * def outboundFares = availability.outboundFares.Adult[0]
-     * def returnFares = availability.returnFares.Adult[0]
      * print outboundFares
-     * print returnFares
      * def total = availability.total
 
-     * def upg =
-          """
-          {
-           "agency" :
-           {
-               "gateway": "AUTHORIZE",
-               "agency": "4249",
-               "country": "US"
-           },
-             "accountNumber": "5123456789012346",
-             "securityCode": "123",
-             "expirationMonth": "05",
-             "expirationYear": "21",
-             "nameOnCard": "#(faker.name().fullName())",
-             "address1": "9310 Old Kings Rd., Ste 401",
-             "address2": "",
-             "city": "Jacksonville",
-             "state": "FL",
-             "postalCode": "32257",
-             "country": "US",
-             "phone": "5555546855",
-             "email": "sbrooks@tdstickets.com",
-             "ipAddress": "127.0.0.1",
-             "fraudAlgorithm": ""
-          }
-          """
-
-#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
-#     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
-     And request upg
-     When method post
+     Given path 'customer/payment/stored'
+     And request {}
+     When method get
      Then status 200
-     * def token = response.token
-     * print token
 
-#     Given url 'https://api.dev.tdstickets.com/ticketing/'
-#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-     Given url 'https://api.qa.tdstickets.com/ticketing/'
+     * def storedCards = response
+     * print storedCards[0].storedPaymentId
+     * def paymentId = storedCards[0].storedPaymentId
 
-     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
+     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
      * def passengers = karate.repeat(3, passengerJson)
      * print passengers
 
@@ -234,18 +177,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
               },
                "occurrence": 1
               },
-            "returning": {
-               "carrierId": 1,
-               "scheduleUuid": "<returnScheduleUuid>",
-               "departDate": "<returnDepartDate>",
-               "origin": {
-                  "stopUuid": "<returnOrigin>"
-               },
-                "destination": {
-                  "stopUuid": "<returnDestination>"
-                },
-                "occurrence": 1
-            },
             "buyer": {
               "firstName": "#(faker.name().firstName())",
               "lastName": "#(faker.name().lastName())",
@@ -257,8 +188,7 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
-              "token": "<token>",
-              "transactionDate": 1559585242396,
+              "storedPaymentId": <paymentId>,
               "paymentMethod": "ONLINE",
               "createProfile": false
             },
@@ -274,13 +204,9 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
-     * replace bookRequest.returnDepartDate = returnDepartDate
-     * replace bookRequest.returnDestination = origin
-     * replace bookRequest.returnOrigin = destination
-     * replace bookRequest.returnScheduleUuid = returnScheduleUuid
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
-     * replace bookRequest.token = token
+     * replace bookRequest.paymentId = paymentId
 
      * print bookRequest
 

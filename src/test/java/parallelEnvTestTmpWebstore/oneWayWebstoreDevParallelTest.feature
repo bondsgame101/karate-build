@@ -24,6 +24,13 @@ Background:
     """
   * def tomorrow = getDate("tomorrow")
   * def week = getDate("week")
+  * def faker = new faker()
+  * def firstName = faker.name().firstName()
+  * def lastName = faker.name().lastName()
+  * def zip = faker.address().zipCode()
+  * def address1 = faker.address().streetAddress()
+  * def city = faker.address().city()
+  * def state = faker.address().stateAbbr()
 
 
 
@@ -55,11 +62,11 @@ Scenario: Oneway Purchase
   And request { adults: 4, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]) }
   When method post
   Then status 201
+  * def location = responseHeaders['Location'][0]
+#  * def location = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore/') + 9)
+  * print location
 
-  * def location = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore/') + 9)
-#  * print location
-
-  Given path location
+  Given url location
   When method get
   Then status 200
 
@@ -77,18 +84,21 @@ Scenario: Oneway Purchase
 #  * print schedulesResults
   * def departKey = scheduleResults[0].key
   * def departFareKey = scheduleResults[0].fares.flexFare.key
-#  * print departKey
+  * print departKey
 #  * print departFareKey
+  * url 'https://api.dev.tdstickets.com/webstore/'
 
   Given path 'v1/detail/4249'
   And request { adults: 4, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]), departKey: #(departKey), departFareKey: #(departFareKey) }
   When method post
   Then status 201
 
-  * def detailLocation = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore') + 9)
-#  * print detailLocation
+  * def detailLocation = responseHeaders['Location'][0]
+#  * def detailLocation = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore') + 9)
+  * print detailLocation
 
-  Given path detailLocation
+
+  Given url detailLocation
   When method get
   Then status 200
 
@@ -108,7 +118,7 @@ Scenario: Oneway Purchase
     "securityCode": "000",
     "expirationMonth": "05",
     "expirationYear": "21",
-    "nameOnCard": "Aaron D Eldridge",
+    "nameOnCard": "#(faker.name().fullName())",
     "address1": "3265 Woodmont Drive",
     "address2": "",
     "city": "San Jose",
@@ -161,29 +171,29 @@ Scenario: Oneway Purchase
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "P",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         },
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "a",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         },
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "e",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         },
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "w",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         }
       ],
@@ -216,9 +226,9 @@ Scenario: Oneway Purchase
   When method post
   Then status 201
 
-  * def bookLocation = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore') + 9)
+  * def bookLocation = responseHeaders['Location'][0]
 
-  Given path bookLocation
+  Given url bookLocation
   When method get
   Then status 200
 

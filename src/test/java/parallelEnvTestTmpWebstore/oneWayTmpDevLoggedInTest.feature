@@ -22,18 +22,16 @@ Feature: Purchase a One Way ticket in TMP Dev logged in
       return sdf.format(cal.getTime());
     }
     """
-    * def faker =
-    """
-    function(arg) {
-      var faker = Java.type('com.github.javafaker');
-      return faker;
-    }
-    """
-    * print faker
-
 
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
+    * def faker = new faker()
+    * def firstName = faker.name().firstName()
+    * def lastName = faker.name().lastName()
+    * def zip = faker.address().zipCode()
+    * def address1 = faker.address().streetAddress()
+    * def city = faker.address().city()
+    * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
      * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }

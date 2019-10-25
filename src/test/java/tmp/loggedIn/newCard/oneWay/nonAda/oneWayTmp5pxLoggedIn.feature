@@ -12,6 +12,8 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
       var SimpleDateFormat = Java.type('java.text.SimpleDateFormat');
       var Calendar = Java.type('java.util.Calendar');
       var sdf = new SimpleDateFormat('yyyy-MM-dd');
+      var random_one = Math.floor(Math.random() * 10) + 2;
+      var random_two = Math.floor(Math.random() * 10) + 12;
       cal = Calendar.getInstance();
       if (period == "tomorrow") {
         cal.add(Calendar.DATE, 1);
@@ -19,8 +21,12 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
        else if (period == "today") {
         cal.add(Calendar.DATE, 0);
       }
-       else {
+       else if (period == "week") {
         cal.add(Calendar.DATE, 7)
+      } else if (period == "randDepart") {
+        cal.add(Calendar.DATE, random_one)
+      } else if (period == "randReturn") {
+        cal.add(Calendar.DATE, random_two)
       }
       return sdf.format(cal.getTime());
     }
@@ -142,7 +148,7 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
              "securityCode": "123",
              "expirationMonth": "05",
              "expirationYear": "21",
-             "nameOnCard": "Steven Brooks",
+             "nameOnCard": "#(faker.name().fullName())",
              "address1": "9310 Old Kings Rd., Ste 401",
              "address2": "",
              "city": "Jacksonville",
@@ -188,8 +194,8 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
                "occurrence": 1
               },
             "buyer": {
-              "firstName": "Patrick",
-              "lastName": "Locey",
+              "firstName": "#(faker.name().firstName())",
+              "lastName": "#(faker.name().lastName())",
               "email": "sbrooks@tdstickets.com",
               "phone": "(201) 543-9867",
               "mobile": "(908) 789-1234"

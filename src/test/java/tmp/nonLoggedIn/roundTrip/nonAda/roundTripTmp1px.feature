@@ -1,4 +1,4 @@
-Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -41,17 +41,7 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
     * def city = faker.address().city()
     * def state = faker.address().stateAbbr()
 
-  Scenario: A full purchase in TMP Dev
-#    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
-    * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-    Given path 'user/login'
-    And request {}
-    When method post
-    Then status 200
-
-    Given path 'customer/detail'
-    When method get
-    Then status 200
+  Scenario: A full purchase in TMP
     Given path 'stop'
     And request { 'carrierId': 1, 'type': 'ORIGIN' }
     When method post
@@ -59,7 +49,7 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
 
     * def origins = response
 #     * print origins
-    * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
+    * def condition = function(x){ return x.stationName == 'Amherst Center' }
     * def temp = karate.filter(origins, condition)
     * def origin = temp[0].stopUuid
     * print origin
@@ -71,7 +61,7 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
 
     * def destinations = response
 #     * print destinations
-    * def condition = function(x){ return x.stationName == 'Boston (Logan Airport)' }
+    * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
     * def temp = karate.filter(origins, condition)
     * def destination = temp[0].stopUuid
     * print destination
@@ -134,7 +124,7 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 3
+            "Adult": 1
             }
          }
          """
@@ -206,7 +196,7 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
     * print token
 
     * def regPassengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
-    * def regPassengers = karate.repeat(3, regPassengerJson)
+    * def regPassengers = karate.repeat(1, regPassengerJson)
 
     * def bookRequest =
           """

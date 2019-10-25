@@ -1,4 +1,4 @@
-Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a Round Trip 5 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -134,7 +134,7 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 3
+            "Adult": 5
             }
          }
          """
@@ -169,44 +169,17 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
 #     * print availability.total
     * def total = availability.total
 
-    * def upg =
-          """
-          {
-           "agency" :
-           {
-               "gateway": "AUTHORIZE",
-               "agency": "4249",
-               "country": "US"
-           },
-             "accountNumber": "5123456789012346",
-             "securityCode": "123",
-             "expirationMonth": "05",
-             "expirationYear": "21",
-             "nameOnCard": "#(faker.name().fullName())",
-             "address1": "9310 Old Kings Rd., Ste 401",
-             "address2": "",
-             "city": "Jacksonville",
-             "state": "FL",
-             "postalCode": "32257",
-             "country": "US",
-             "phone": "5555546855",
-             "email": "sbrooks@tdstickets.com",
-             "ipAddress": "127.0.0.1",
-             "fraudAlgorithm": ""
-          }
-          """
-
-#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
-#     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-    Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
-    And request upg
-    When method post
+    Given path 'customer/payment/stored'
+    And request {}
+    When method get
     Then status 200
-    * def token = response.token
-    * print token
+
+    * def storedCards = response
+    * print storedCards[0].storedPaymentId
+    * def paymentId = storedCards[0].storedPaymentId
 
     * def regPassengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
-    * def regPassengers = karate.repeat(3, regPassengerJson)
+    * def regPassengers = karate.repeat(5, regPassengerJson)
 
     * def bookRequest =
           """
@@ -246,10 +219,9 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
-              "token": "<token>",
-              "transactionDate": 1559585242396,
+              "storedPaymentId": <paymentId>,
               "paymentMethod": "ONLINE",
-              "createProfile": true
+              "createProfile": false
             },
             "sendConfirmationEmail": true
           }
@@ -269,14 +241,11 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
     * replace bookRequest.returnOrigin = destination
     * replace bookRequest.returnScheduleUuid = returnScheduleUuid
     * replace bookRequest.total = total
-    * replace bookRequest.token = token
+    * replace bookRequest.paymentId = paymentId
 
     * print bookRequest
 
-
-#     Given url 'https://api.dev.tdstickets.com/ticketing/'
-#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-    Given url 'https://api.qa.tdstickets.com/ticketing/book'
+    Given path 'book'
     And request bookRequest
     When method post
     Then status 200

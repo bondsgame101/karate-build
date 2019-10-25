@@ -24,10 +24,17 @@ Background:
     """
   * def tomorrow = getDate("tomorrow")
   * def week = getDate("week")
+  * def faker = new faker()
+  * def firstName = faker.name().firstName()
+  * def lastName = faker.name().lastName()
+  * def zip = faker.address().zipCode()
+  * def address1 = faker.address().streetAddress()
+  * def city = faker.address().city()
+  * def state = faker.address().stateAbbr()
 
 
 
-Scenario: Oneway Purchase
+Scenario: One Way Purchase
   Given path 'v1/stop/4249'
   * params { country: 'US', city: 'Alb', state: 'NY'}
   When method get
@@ -56,10 +63,10 @@ Scenario: Oneway Purchase
   When method post
   Then status 201
 
-  * def location = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore/') + 9)
+  * def location = responseHeaders['Location'][0]
 #  * print location
 
-  Given path location
+  Given url location
   When method get
   Then status 200
 
@@ -79,16 +86,17 @@ Scenario: Oneway Purchase
   * def departFareKey = scheduleResults[0].fares.saverFare.key
 #  * print departKey
 #  * print departFareKey
+  * url 'https://api.qa.tdstickets.com/webstore/'
 
   Given path 'v1/detail/4249'
   And request { adults: 4, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]), departKey: #(departKey), departFareKey: #(departFareKey) }
   When method post
   Then status 201
 
-  * def detailLocation = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore') + 9)
+  * def detailLocation = responseHeaders['Location'][0]
 #  * print detailLocation
 
-  Given path detailLocation
+  Given url detailLocation
   When method get
   Then status 200
 
@@ -108,7 +116,7 @@ Scenario: Oneway Purchase
     "securityCode": "000",
     "expirationMonth": "05",
     "expirationYear": "21",
-    "nameOnCard": "Aaron D Eldridge",
+    "nameOnCard": "#(faker.name().fullName())",
     "address1": "3265 Woodmont Drive",
     "address2": "",
     "city": "San Jose",
@@ -161,29 +169,29 @@ Scenario: Oneway Purchase
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "P",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         },
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "a",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         },
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "e",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         },
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "w",
-          "lastName"	: "One",
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
         }
       ],
@@ -209,7 +217,7 @@ Scenario: Oneway Purchase
   * replace bookRequest.origin = get origin[0].stopId
   * replace bookRequest.amount = amount
   * replace bookRequest.token = token
-#  * print 'Your booking request is:', bookRequest
+  * print 'Your booking request is:', bookRequest
 
   Given path 'v1/book/4249'
   And request bookRequest

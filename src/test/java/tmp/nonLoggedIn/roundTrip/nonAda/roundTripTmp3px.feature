@@ -42,16 +42,6 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
     * def state = faker.address().stateAbbr()
 
   Scenario: A full purchase in TMP Dev
-#    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
-    * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-    Given path 'user/login'
-    And request {}
-    When method post
-    Then status 200
-
-    Given path 'customer/detail'
-    When method get
-    Then status 200
     Given path 'stop'
     And request { 'carrierId': 1, 'type': 'ORIGIN' }
     When method post
@@ -182,7 +172,7 @@ Feature: Purchase a Round Trip 3 Passenger ticket in TMP Dev/Stage/QA not logged
              "securityCode": "123",
              "expirationMonth": "05",
              "expirationYear": "21",
-             "nameOnCard": "#(faker.name().fullName())",
+             "nameOnCard": "Steven Brooks",
              "address1": "9310 Old Kings Rd., Ste 401",
              "address2": "",
              "city": "Jacksonville",

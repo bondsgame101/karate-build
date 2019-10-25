@@ -43,12 +43,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
 
   Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-     Given path 'user/login'
-     And request {}
-     When method post
-     Then status 200
-
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
      When method post

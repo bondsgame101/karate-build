@@ -43,12 +43,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
 
   Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-     Given path 'user/login'
-     And request {}
-     When method post
-     Then status 200
-
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
      When method post
@@ -56,7 +50,7 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
      * def origins = response
 #     * print origins
-     * def condition = function(x){ return x.stationName == 'Amherst UMass' }
+     * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
      * print origin
@@ -80,8 +74,8 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
      * def schedules = response
 #     * print schedules[0]
-     * def scheduleUuid = schedules[0].scheduleUuid
-     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+     * def scheduleUuid = schedules[1].scheduleUuid
+     * def departDate = schedules[1].departTime.substring(0, schedules[1].departTime.lastIndexOf('T'))
 #     * def departDate = schedules[0].departTime
      * print scheduleUuid
      * print departDate
@@ -93,8 +87,8 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
     * def returnSchedules = response
 #     * print schedules[0]
-    * def returnScheduleUuid = returnSchedules[0].scheduleUuid
-    * def returnDepartDate = returnSchedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
+    * def returnScheduleUuid = returnSchedules[1].scheduleUuid
+    * def returnDepartDate = returnSchedules[1].departTime.substring(0, schedules[1].departTime.lastIndexOf('T'))
     * print returnScheduleUuid
     * print returnDepartDate
 
@@ -146,7 +140,8 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
           },
           "passengerCounts": {
             "Adult": 3
-            }
+            },
+          "promoCode": "Bus15"
          }
          """
 
@@ -159,6 +154,10 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
      * replace availabilityRequest.scheduleUuid = scheduleUuid
+    * replace availabilityRequest.returnDepartDate = returnDepartDate
+    * replace availabilityRequest.returnDestination = origin
+    * replace availabilityRequest.returnOrigin = destination
+    * replace availabilityRequest.returnScheduleUuid = returnScheduleUuid
 
      * print availabilityRequest
 
@@ -215,9 +214,12 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
-     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
-     * def passengers = karate.repeat(3, passengerJson)
-     * print passengers
+    * def adaPassengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
+    * def adaPassengers = karate.repeat(1, adaPassengerJson)
+    * def regPassengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
+    * def regPassengers = karate.repeat(2, regPassengerJson)
+    * def passengers = karate.append(adaPassengers, regPassengers)
+    * print passengers
 
      * def bookRequest =
           """
@@ -262,7 +264,8 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
               "paymentMethod": "ONLINE",
               "createProfile": false
             },
-            "sendConfirmationEmail": true
+            "sendConfirmationEmail": true,
+          "promoCode": "Bus15"
           }
           """
 
@@ -287,7 +290,7 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      Given path 'book'
      And request bookRequest
      When method post
-     Then status 400
+     Then status 200
 
      * def book = response
      * print book

@@ -1,4 +1,4 @@
-Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 5 Passenger 2 Wheelchair ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -43,12 +43,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
 
   Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-     Given path 'user/login'
-     And request {}
-     When method post
-     Then status 200
-
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
      When method post
@@ -56,7 +50,7 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
      * def origins = response
 #     * print origins
-     * def condition = function(x){ return x.stationName == 'Amherst UMass' }
+     * def condition = function(x){ return x.stationName == 'Everett' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
      * print origin
@@ -86,26 +80,14 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      * print scheduleUuid
      * print departDate
 
-    Given path 'schedule'
-    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(destination)' }, 'destination': { 'stopUuid': '#(origin)' }, 'departDate': '#(week)' }
-    When method post
-    Then status 200
+     Given path 'passenger/ada/options/1'
+     And request {}
+     When method get
+     Then status 200
 
-    * def returnSchedules = response
-#     * print schedules[0]
-    * def returnScheduleUuid = returnSchedules[0].scheduleUuid
-    * def returnDepartDate = returnSchedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
-    * print returnScheduleUuid
-    * print returnDepartDate
-
-    Given path 'passenger/ada/options/1'
-    And request {}
-    When method get
-    Then status 200
-
-    * def adaOptions = response
-    * print adaOptions[0]
-    * json ada = adaOptions[0]
+     * def adaOptions = response
+     * print adaOptions[0]
+     * json ada = adaOptions[0]
 
      * def availabilityRequest =
          """
@@ -125,18 +107,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
             },
              "occurrence": 1
             },
-          "returning": {
-             "carrierId": 1,
-             "scheduleUuid": "<returnScheduleUuid>",,
-             "departDate": "<returnDepartDate>",
-             "origin": {
-               "stopUuid": "<returnOrigin>"
-             },
-             "occurrence": 1,
-             "destination": {
-               "stopUuid": "<returnDestination>"
-             }
-          },
           "buyer": {
             "firstName": "Patrick",
             "lastName": "Locey",
@@ -145,11 +115,10 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 3
+            "Adult": 5
             }
          }
          """
-
      * set availabilityRequest.buyer.address1 = address1
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
@@ -169,10 +138,9 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 
      * def availability = response
      * print availability
+#     * print availability.outboundFares.Adult[0]
      * def outboundFares = availability.outboundFares.Adult[0]
-     * def returnFares = availability.returnFares.Adult[0]
      * print outboundFares
-     * print returnFares
      * def total = availability.total
 
      * def upg =
@@ -215,8 +183,11 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
-     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
-     * def passengers = karate.repeat(3, passengerJson)
+     * def adaPassengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def adaPassengers = karate.repeat(2, adaPassengerJson)
+     * def regPassengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def regPassengers = karate.repeat(3, regPassengerJson)
+     * def passengers = karate.append(adaPassengers, regPassengers)
      * print passengers
 
      * def bookRequest =
@@ -234,18 +205,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
               },
                "occurrence": 1
               },
-            "returning": {
-               "carrierId": 1,
-               "scheduleUuid": "<returnScheduleUuid>",
-               "departDate": "<returnDepartDate>",
-               "origin": {
-                  "stopUuid": "<returnOrigin>"
-               },
-                "destination": {
-                  "stopUuid": "<returnDestination>"
-                },
-                "occurrence": 1
-            },
             "buyer": {
               "firstName": "#(faker.name().firstName())",
               "lastName": "#(faker.name().lastName())",
@@ -274,10 +233,6 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      * replace bookRequest.departDate = departDate
      * replace bookRequest.scheduleUuid = scheduleUuid
      * replace bookRequest.destination = destination
-     * replace bookRequest.returnDepartDate = returnDepartDate
-     * replace bookRequest.returnDestination = origin
-     * replace bookRequest.returnOrigin = destination
-     * replace bookRequest.returnScheduleUuid = returnScheduleUuid
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
@@ -287,7 +242,7 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      Given path 'book'
      And request bookRequest
      When method post
-     Then status 400
+     Then status 200
 
      * def book = response
      * print book
