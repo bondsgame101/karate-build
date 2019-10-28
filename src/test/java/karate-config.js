@@ -17,10 +17,12 @@ function fn() {
     config.locale = locale;
   } else if (env == 'stage') {
     config.faker = faker;
+    config.locale = locale;
     // customize
     // e.g. config.foo = 'bar';
   } else if (env == 'e2e') {
     config.faker = faker;
+    config.locale = locale;
     // customize
   }
   return config;
