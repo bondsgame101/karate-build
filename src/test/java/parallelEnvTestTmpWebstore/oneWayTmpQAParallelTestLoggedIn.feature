@@ -1,9 +1,9 @@
-Feature: Purchase a One Way 1 Passenger ticket in TMP Stage logged in
-
+Feature: Purchase a One Way ticket in TMP QA not logged in
   Background:
-    * url 'https://api2.stage.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * url 'https://quasar-api.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '8D238A87-F063-46B9-8D51-E0A2977B8C23', 'Content-Type': 'application/json'} prod
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -29,7 +29,6 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Stage logged in
       return sdf.format(cal.getTime());
     }
     """
-
     * def getRandomInt =
     """
     function(max) {
@@ -59,7 +58,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Stage logged in
     * def state = faker.address().stateAbbr()
 
   Scenario: A full purchase in TMP Dev
-    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' } dev/stage
+    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' } dev/stage
     Given path 'user/login'
     And request {}
     When method post
@@ -180,14 +179,16 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Stage logged in
           }
           """
 
-     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-     And request upg
-     When method post
-     Then status 200
-     * def token = response.token
-     * print token
+    Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+#    Given url 'https://upg.tdstickets.com/tokenizer/v1/generate/card'
+    And request upg
+    When method post
+    Then status 200
+    * def token = response.token
+    * print token
 
-     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+    Given url 'https://api.qa.tdstickets.com/ticketing/'
+#     Given url 'https://quasar-api.tdstickets.com/ticketing/
 
     * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
     * def passengers = karate.repeat(1, passengerJson)
@@ -246,5 +247,4 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Stage logged in
 
     * def book = response
     * print book
-
 

@@ -2,6 +2,7 @@ Feature: Purchase a One Way ticket in Webstore Stage not logged in
 
   Background:
     * url 'https://api2.stage.tdstickets.com/webstore/'
+    * configure retry = { count: 5, interval: 3000 }
     * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
     * def getDate =
     """
@@ -35,6 +36,12 @@ Feature: Purchase a One Way ticket in Webstore Stage not logged in
 
 
   Scenario: One Way Purchase
+    * header Authorization = call read('basic-auth.js') { username: 'sbrooks@tdstickets.com', password: 'test1234' }
+    Given path 'v1/user/login'
+    And request {}
+    When method post
+    Then status 200
+
     Given path 'v1/stop/4249'
     * params { country: 'US', city: 'Alb', state: 'NY'}
     When method get
@@ -206,6 +213,7 @@ Feature: Purchase a One Way ticket in Webstore Stage not logged in
     * def bookLocation = responseHeaders['Location'][0]
 
     Given url bookLocation
+    And retry until responseStatus == 200
     When method get
     Then status 200
 

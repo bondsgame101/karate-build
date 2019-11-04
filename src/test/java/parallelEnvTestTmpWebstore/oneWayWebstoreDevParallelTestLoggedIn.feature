@@ -1,8 +1,8 @@
-Feature: Purchase a One Way ticket in Webstore QA not logged in
+Feature: Purchase a One Way ticket in Webstore Dev not logged in
 
 Background:
-  * url 'https://api.qa.tdstickets.com/webstore/'
-  * configure headers = { 'x-agency-id': 'c6ebc417d3ec11e4b6f757d6b72f2478', 'Content-Type': 'application/json'}
+  * url 'https://api.dev.tdstickets.com/webstore/'
+  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
   * def getDate =
     """
     function(period) {
@@ -34,7 +34,13 @@ Background:
 
 
 
-Scenario: One Way Purchase
+Scenario: Oneway Purchase
+  * header Authorization = call read('basic-auth.js') { username: 'sbrooks@tdstickets.com', password: 'test1234' }
+  Given path 'v1/user/login'
+  And request {}
+  When method post
+  Then status 200
+
   Given path 'v1/stop/4249'
   * params { country: 'US', city: 'Alb', state: 'NY'}
   When method get
@@ -59,12 +65,12 @@ Scenario: One Way Purchase
   * print 'Your Destination Is:', destination[0]
 
   Given path 'v1/search/4249'
-  And request { adults: 1, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]) }
+  And request { adults: 4, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]) }
   When method post
   Then status 201
-
   * def location = responseHeaders['Location'][0]
-#  * print location
+#  * def location = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore/') + 9)
+  * print location
 
   Given url location
   When method get
@@ -83,18 +89,20 @@ Scenario: One Way Purchase
   * def scheduleResults = karate.filter(outboundSchedules, fareSearch)
 #  * print schedulesResults
   * def departKey = scheduleResults[0].key
-  * def departFareKey = scheduleResults[0].fares.saverFare.key
-#  * print departKey
+  * def departFareKey = scheduleResults[0].fares.flexFare.key
+  * print departKey
 #  * print departFareKey
-  * url 'https://api.qa.tdstickets.com/webstore/'
+  * url 'https://api.dev.tdstickets.com/webstore/'
 
   Given path 'v1/detail/4249'
-  And request { adults: 1, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]), departKey: #(departKey), departFareKey: #(departFareKey) }
+  And request { adults: 4, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]), departKey: #(departKey), departFareKey: #(departFareKey) }
   When method post
   Then status 201
 
   * def detailLocation = responseHeaders['Location'][0]
-#  * print detailLocation
+#  * def detailLocation = responseHeaders['Location'][0].substring(responseHeaders['Location'][0].lastIndexOf('webstore') + 9)
+  * print detailLocation
+
 
   Given url detailLocation
   When method get
@@ -130,14 +138,14 @@ Scenario: One Way Purchase
     }
     """
 
-  Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+  Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
   And request upg
   When method post
   Then status 200
   * def token = response.token
 #  * print token
 
-  Given url 'https://api.qa.tdstickets.com/webstore/'
+  Given url 'https://api.dev.tdstickets.com/webstore/'
 
   * def bookRequest =
     """
@@ -172,6 +180,27 @@ Scenario: One Way Purchase
           "firstName"	: "#(faker.name().firstName())",
           "lastName"	: "#(faker.name().lastName())",
           "type"		: "ADULT"
+        },
+        {
+          "ada"			: false,
+          "bags"		: 0,
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
+          "type"		: "ADULT"
+        },
+        {
+          "ada"			: false,
+          "bags"		: 0,
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
+          "type"		: "ADULT"
+        },
+        {
+          "ada"			: false,
+          "bags"		: 0,
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
+          "type"		: "ADULT"
         }
       ],
       "payment": {
@@ -196,7 +225,7 @@ Scenario: One Way Purchase
   * replace bookRequest.origin = get origin[0].stopId
   * replace bookRequest.amount = amount
   * replace bookRequest.token = token
-  * print 'Your booking request is:', bookRequest
+#  * print 'Your booking request is:', bookRequest
 
   Given path 'v1/book/4249'
   And request bookRequest

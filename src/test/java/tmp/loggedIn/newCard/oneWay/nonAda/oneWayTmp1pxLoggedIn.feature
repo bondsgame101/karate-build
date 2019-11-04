@@ -1,11 +1,11 @@
-Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA logged in
 
   Background:
-#    * url 'https://api.dev.tdstickets.com/ticketing/'
+    * url 'https://api.dev.tdstickets.com/ticketing/'
 #    * url 'https://api2.stage.tdstickets.com/ticketing/'
-    * url 'https://api.qa.tdstickets.com/ticketing/'
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
+#    * url 'https://api.qa.tdstickets.com/ticketing/'
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
     * def getDate =
     """
     function(period) {
@@ -60,7 +60,8 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
     * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
+     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' } dev/stage
+#     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' } qa
      Given path 'user/login'
      And request {}
      When method post
@@ -163,8 +164,8 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
                "agency": "4249",
                "country": "US"
            },
-             "accountNumber": "5123456789012346",
-             "securityCode": "123",
+             "accountNumber": "4111111111111111",
+             "securityCode": "000",
              "expirationMonth": "05",
              "expirationYear": "21",
              "nameOnCard": "#(faker.name().fullName())",
@@ -181,18 +182,18 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
-#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
 #     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
      * def token = response.token
      * print token
 
-#     Given url 'https://api.dev.tdstickets.com/ticketing/'
+     Given url 'https://api.dev.tdstickets.com/ticketing/'
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-     Given url 'https://api.qa.tdstickets.com/ticketing/'
+#     Given url 'https://api.qa.tdstickets.com/ticketing/'
 
      * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
      * def passengers = karate.repeat(1, passengerJson)

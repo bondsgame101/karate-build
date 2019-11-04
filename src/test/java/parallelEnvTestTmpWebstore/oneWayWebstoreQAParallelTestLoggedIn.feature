@@ -1,4 +1,4 @@
-Feature: Purchase a One Way ticket in Webstore QA not logged in
+Feature: Purchase a One Way ticket in Webstore QA logged in
 
 Background:
   * url 'https://api.qa.tdstickets.com/webstore/'
@@ -35,6 +35,12 @@ Background:
 
 
 Scenario: One Way Purchase
+  * header Authorization = call read('basic-auth.js') { username: 'sbrooks@tdstickets.com', password: 'test1234' }
+  Given path 'v1/user/login'
+  And request {}
+  When method post
+  Then status 200
+
   Given path 'v1/stop/4249'
   * params { country: 'US', city: 'Alb', state: 'NY'}
   When method get
