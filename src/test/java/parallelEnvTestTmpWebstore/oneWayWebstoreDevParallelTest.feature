@@ -2,6 +2,7 @@ Feature: Purchase a One Way ticket in Webstore Dev not logged in
 
 Background:
   * url 'https://api.dev.tdstickets.com/webstore/'
+  * configure retry = { count: 5, interval: 3000 }
   * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
   * def getDate =
     """
@@ -229,6 +230,7 @@ Scenario: Oneway Purchase
   * def bookLocation = responseHeaders['Location'][0]
 
   Given url bookLocation
+  And retry until responseStatus == 200
   When method get
   Then status 200
 

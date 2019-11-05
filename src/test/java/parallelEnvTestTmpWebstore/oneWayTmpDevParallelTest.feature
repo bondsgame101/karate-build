@@ -2,6 +2,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev not logged in
 
   Background:
     * url 'https://api.dev.tdstickets.com/ticketing/'
+    * configure retry = { count: 5, interval: 3000 }
     * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
     * def getDate =
     """
@@ -232,6 +233,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev not logged in
     * replace bookRequest.token = token
 
     Given path 'book'
+    And retry until responseStatus == 200
     And request bookRequest
     When method post
     Then status 200
