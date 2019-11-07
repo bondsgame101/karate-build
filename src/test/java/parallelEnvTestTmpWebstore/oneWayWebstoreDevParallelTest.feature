@@ -230,8 +230,9 @@ Scenario: Oneway Purchase
   * def bookLocation = responseHeaders['Location'][0]
 
   Given url bookLocation
-  And retry until responseStatus == 200
   When method get
+  And retry until responseStatus == 200
+  And print responseStatus
   Then status 200
 
   * print response
