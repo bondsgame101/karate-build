@@ -113,9 +113,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev not logged in
           "buyer": {
             "firstName": "Patrick",
             "lastName": "Locey",
-            "email": "plocey@tdstickets.com",
-            "phone": "(201) 543-9867",
-            "mobile": "(908) 789-1234"
+            "email": "plocey@tdstickets.com"
           },
           "passengerCounts": {
             "Adult": 1
@@ -214,6 +212,8 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev not logged in
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
+              "expirationMonth": 05,
+              "expirationYear": 21,
               "createProfile": true
             },
             "sendConfirmationEmail": true
@@ -233,9 +233,9 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev not logged in
     * replace bookRequest.token = token
 
     Given path 'book'
-    And retry until responseStatus == 200
     And request bookRequest
     When method post
+    And retry until responseStatus == 200
     Then status 200
 
     * def book = response

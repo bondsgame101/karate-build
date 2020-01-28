@@ -214,7 +214,9 @@ Feature: Purchase a One Way ticket in TMP Stage not logged in
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
-              "createProfile": true
+              "expirationMonth": 05,
+              "expirationYear": 21,
+              "createProfile": false
             },
             "sendConfirmationEmail": true
           }

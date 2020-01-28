@@ -206,8 +206,8 @@ Feature: Purchase a One Way ticket in TMP QA not logged in
               "firstName": "#(faker.name().firstName())",
               "lastName": "#(faker.name().lastName())",
               "email": "sbrooks@tdstickets.com",
-              "phone": "(201) 543-9867",
-              "mobile": "(908) 789-1234"
+              "phone": "asda",
+              "mobile": "asda"
             },
             "passengers": [],
             "paymentInfo": {
@@ -216,6 +216,8 @@ Feature: Purchase a One Way ticket in TMP QA not logged in
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
+              "expirationMonth": 05,
+              "expirationYear": 21,
               "createProfile": true
             },
             "sendConfirmationEmail": true

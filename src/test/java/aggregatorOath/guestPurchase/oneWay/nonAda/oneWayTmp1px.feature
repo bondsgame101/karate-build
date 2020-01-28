@@ -1,11 +1,19 @@
-Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-#    * url 'https://api.dev.tdstickets.com/ticketing/'
-#    * url 'https://api2.stage.tdstickets.com/ticketing/'
-    * url 'https://api.qa.tdstickets.com/ticketing/'
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
+    * url 'https://accounts.stage.tdstickets.com/auth/realms/qa/protocol/openid-connect/token'
+    * form field grant_type = 'client_credentials'
+    * form field client_id = 'wanderu-carrier-ops'
+    * form field client_secret = 'c5cdefb8-7982-48ad-84cd-354c991b186f'
+    * method post
+    * status 200
+
+    * def accessToken = response.access_token
+    * print accessToken
+
+    * url 'https://api.qa.tdstickets.com/thirdparty/ticketing'
+    * configure headers = { TDS-Carrier-Code: 'PPB', Authorization: '#("Bearer " + accessToken)', Content-Type: 'application/json'} qa
+
     * def getDate =
     """
     function(period) {
@@ -31,26 +39,8 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
       return sdf.format(cal.getTime());
     }
     """
-    * def getRandomInt =
-    """
-    function(max) {
-        return Math.floor(Math.random() * Math.floor(max));
-    }
-    """
-
-    * def randomSchedule =
-     """
-     function(list) {
-       var random = getRandomInt(list.length)
-       return list[random]
-     }
-     """
-
-    * def today = getDate("today")
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
-    * def randomDepart = getDate("randDepart")
-    * def randomReturn = getDate("randReturn")
     * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
@@ -60,11 +50,6 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
     * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-     Given path 'user/login'
-     And request {}
-     When method post
-     Then status 200
 
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
@@ -126,10 +111,11 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 5
+            "Adult": 1
             }
          }
          """
+
      * set availabilityRequest.buyer.address1 = address1
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
@@ -189,12 +175,10 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
      * def token = response.token
      * print token
 
-#     Given url 'https://api.dev.tdstickets.com/ticketing/'
-#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-     Given url 'https://api.qa.tdstickets.com/ticketing/'
+     Given url 'https://api.qa.tdstickets.com/thirdparty/ticketing'
 
      * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
-     * def passengers = karate.repeat(5, passengerJson)
+     * def passengers = karate.repeat(1, passengerJson)
 
      * def bookRequest =
           """

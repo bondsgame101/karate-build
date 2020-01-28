@@ -57,7 +57,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev logged in
     * def state = faker.address().stateAbbr()
 
   Scenario: A full purchase in TMP Dev
-    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' } dev/stage
+    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb2@tdstickets.com', password: 'test1234' } dev/stage
     Given path 'user/login'
     And request {}
     When method post
@@ -70,7 +70,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev logged in
 
     * def origins = response
 #     * print origins
-    * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
+    * def condition = function(x){ return x.stationName == 'Amherst UMass' }
     * def temp = karate.filter(origins, condition)
     * def origin = temp[0].stopUuid
     * print origin
@@ -82,7 +82,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev logged in
 
     * def destinations = response
 #     * print destinations
-    * def condition = function(x){ return x.stationName == 'Boston (Logan Airport)' }
+    * def condition = function(x){ return x.stationName == 'Woods Hole' }
     * def temp = karate.filter(origins, condition)
     * def destination = temp[0].stopUuid
     * print destination
@@ -219,7 +219,9 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev logged in
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
-              "createProfile": true
+              "expirationMonth": 05,
+              "expirationYear": 21,
+              "createProfile": false
             },
             "sendConfirmationEmail": true
           }

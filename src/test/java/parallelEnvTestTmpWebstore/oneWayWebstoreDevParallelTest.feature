@@ -3,7 +3,7 @@ Feature: Purchase a One Way ticket in Webstore Dev not logged in
 Background:
   * url 'https://api.dev.tdstickets.com/webstore/'
   * configure retry = { count: 5, interval: 3000 }
-  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
+  * configure headers = { 'x-agency-id': 'd9e891a7218311e8a8ef1ba86dd46528', 'Content-Type': 'application/json'} Dev/Stage
   * def getDate =
     """
     function(period) {
@@ -36,7 +36,7 @@ Background:
 
 
 Scenario: Oneway Purchase
-  Given path 'v1/stop/4249'
+  Given path 'v1/stop/5571'
   * params { country: 'US', city: 'Alb', state: 'NY'}
   When method get
   Then status 200
@@ -48,7 +48,7 @@ Scenario: Oneway Purchase
   * print 'Your Origin Is:', origin
 
 
-  Given path 'v1/stop/4249'
+  Given path 'v1/stop/5571'
   * params { country: 'US', city: 'New', state: 'NY'}
   When method get
   Then status 200
@@ -59,7 +59,7 @@ Scenario: Oneway Purchase
   * def destination = karate.filter(stops, condition)
   * print 'Your Destination Is:', destination[0]
 
-  Given path 'v1/search/4249'
+  Given path 'v1/search/5571'
   And request { adults: 4, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]) }
   When method post
   Then status 201
@@ -89,7 +89,7 @@ Scenario: Oneway Purchase
 #  * print departFareKey
   * url 'https://api.dev.tdstickets.com/webstore/'
 
-  Given path 'v1/detail/4249'
+  Given path 'v1/detail/5571'
   And request { adults: 4, seniors: 0, children: 0, departDate: '#(tomorrow)', destination: #(destination[0]), origin: #(origin[0]), departKey: #(departKey), departFareKey: #(departFareKey) }
   When method post
   Then status 201
@@ -222,7 +222,7 @@ Scenario: Oneway Purchase
   * replace bookRequest.token = token
 #  * print 'Your booking request is:', bookRequest
 
-  Given path 'v1/book/4249'
+  Given path 'v1/book/5571'
   And request bookRequest
   When method post
   Then status 201

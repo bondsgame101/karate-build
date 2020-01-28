@@ -227,6 +227,8 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA logged in
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
+              "expirationMonth": 05,
+              "expirationYear": 21,
               "createProfile": true
             },
             "sendConfirmationEmail": true

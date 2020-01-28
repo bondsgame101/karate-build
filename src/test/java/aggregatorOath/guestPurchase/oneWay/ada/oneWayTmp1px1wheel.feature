@@ -1,11 +1,11 @@
-Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 1 Passenger 1 Wheelchair ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
 #    * url 'https://api2.stage.tdstickets.com/ticketing/'
     * url 'https://api.qa.tdstickets.com/ticketing/'
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+    * configure headers = { TDS-Carrier-Code: 'PPB', TDS-Api-Key: '491ACBF0-9020-4471-984F-57772F1CE9C7', Content-Type: 'application/json'}
     * def getDate =
     """
     function(period) {
@@ -60,19 +60,12 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
     * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-     Given path 'user/login'
-     And request {}
-     When method post
-     Then status 200
-
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
      When method post
      Then status 200
 
      * def origins = response
-#     * print origins
      * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
@@ -84,49 +77,60 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
      Then status 200
 
      * def destinations = response
-#     * print destinations
-     * def condition = function(x){ return x.stationName == 'Boston (Logan Airport)' }
+     * def condition = function(x){ return x.stationName == 'Bourne' }
      * def temp = karate.filter(origins, condition)
      * def destination = temp[0].stopUuid
      * print destination
 
      Given path 'schedule'
-     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(tomorrow)' }
+     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(randomDepart)' }
      When method post
      Then status 200
 
      * def schedules = response
-#     * print schedules[0]
-     * def scheduleUuid = schedules[0].scheduleUuid
-     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
-#     * def departDate = schedules[0].departTime
+     * def selectedSchedule = randomSchedule(schedules)
+     * print selectedSchedule
+     * def scheduleUuid = selectedSchedule.scheduleUuid
+     * def departDate = selectedSchedule.departTime.substring(0, selectedSchedule.departTime.lastIndexOf('T'))
      * print scheduleUuid
      * print departDate
+
+     Given path 'passenger/ada/options/1'
+     And request {}
+     When method get
+     Then status 200
+
+     * def adaOptions = response
+     * print adaOptions[0]
+     * json ada = adaOptions[0]
 
      * def availabilityRequest =
          """
          {
+          "adaOptions":
+           "<adaOptions>"
+          ,
           "outbound": {
              "carrierId": 1,
-             "scheduleUuid": "<scheduleUuid>",
-             "departDate": "<departDate>",
+             "scheduleUuid": <scheduleUuid>,
+             "departDate": <departDate>,
              "origin": {
                 "stopUuid": "<origin>"
             },
           "destination": {
-                "stopUuid": "<destination>"
+                "stopUuid": <destination>
             },
              "occurrence": 1
             },
           "buyer": {
-            "firstName": "Patrick",
-            "lastName": "Locey",
+            "firstName": "#(faker.name().firstName())",
+            "lastName": "#(faker.name().lastName())",
             "email": "plocey@tdstickets.com",
             "phone": "(201) 543-9867",
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 5
+            "Adult": 1
             }
          }
          """
@@ -134,6 +138,7 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
      * set availabilityRequest.buyer.zip = zip
+     * set availabilityRequest.adaOptions[0] = ada
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
@@ -193,8 +198,8 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
      Given url 'https://api.qa.tdstickets.com/ticketing/'
 
-     * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
-     * def passengers = karate.repeat(5, passengerJson)
+     * def passengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+     * def passengers = karate.repeat(1, passengerJson)
 
      * def bookRequest =
           """
@@ -227,7 +232,7 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
               "paymentMethod": "ONLINE",
               "expirationMonth": 05,
               "expirationYear": 21,
-              "createProfile": true
+              "createProfile": false
             },
             "sendConfirmationEmail": true
           }
@@ -244,6 +249,7 @@ Feature: Purchase a One Way 5 Passenger ticket in TMP Dev/Stage/QA not logged in
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
      * replace bookRequest.token = token
+     * print bookRequest
 
      Given path 'book'
      And request bookRequest

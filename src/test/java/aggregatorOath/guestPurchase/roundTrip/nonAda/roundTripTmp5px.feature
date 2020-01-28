@@ -1,4 +1,4 @@
-Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a Round Trip 5 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
@@ -31,26 +31,8 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
       return sdf.format(cal.getTime());
     }
     """
-    * def getRandomInt =
-    """
-    function(max) {
-        return Math.floor(Math.random() * Math.floor(max));
-    }
-    """
-
-    * def randomSchedule =
-     """
-     function(list) {
-       var random = getRandomInt(list.length)
-       return list[random]
-     }
-     """
-
-    * def today = getDate("today")
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
-    * def randomDepart = getDate("randDepart")
-    * def randomReturn = getDate("randReturn")
     * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
@@ -59,17 +41,7 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
     * def city = faker.address().city()
     * def state = faker.address().stateAbbr()
 
-  Scenario: A full purchase in TMP Dev
-#    * header Authorization = call read('basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
-    * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-    Given path 'user/login'
-    And request {}
-    When method post
-    Then status 200
-
-    Given path 'customer/detail'
-    When method get
-    Then status 200
+  Scenario: A full purchase in TMP
     Given path 'stop'
     And request { 'carrierId': 1, 'type': 'ORIGIN' }
     When method post
@@ -77,7 +49,7 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
 
     * def origins = response
 #     * print origins
-    * def condition = function(x){ return x.stationName == 'Amherst Center' }
+    * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
     * def temp = karate.filter(origins, condition)
     * def origin = temp[0].stopUuid
     * print origin
@@ -89,7 +61,7 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
 
     * def destinations = response
 #     * print destinations
-    * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
+    * def condition = function(x){ return x.stationName == 'Boston (Logan Airport)' }
     * def temp = karate.filter(origins, condition)
     * def destination = temp[0].stopUuid
     * print destination
@@ -152,7 +124,7 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 1
+            "Adult": 5
             }
          }
          """
@@ -187,17 +159,44 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
 #     * print availability.total
     * def total = availability.total
 
-    Given path 'customer/payment/stored'
-    And request {}
-    When method get
-    Then status 200
+    * def upg =
+          """
+          {
+           "agency" :
+           {
+               "gateway": "AUTHORIZE",
+               "agency": "4249",
+               "country": "US"
+           },
+             "accountNumber": "5123456789012346",
+             "securityCode": "123",
+             "expirationMonth": "05",
+             "expirationYear": "21",
+             "nameOnCard": "#(faker.name().fullName())",
+             "address1": "9310 Old Kings Rd., Ste 401",
+             "address2": "",
+             "city": "Jacksonville",
+             "state": "FL",
+             "postalCode": "32257",
+             "country": "US",
+             "phone": "5555546855",
+             "email": "sbrooks@tdstickets.com",
+             "ipAddress": "127.0.0.1",
+             "fraudAlgorithm": ""
+          }
+          """
 
-    * def storedCards = response
-    * print storedCards[0].storedPaymentId
-    * def paymentId = storedCards[0].storedPaymentId
+#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
+    Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+    And request upg
+    When method post
+    Then status 200
+    * def token = response.token
+    * print token
 
     * def regPassengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares, 'returnFare': returnFares }}
-    * def regPassengers = karate.repeat(1, regPassengerJson)
+    * def regPassengers = karate.repeat(5, regPassengerJson)
 
     * def bookRequest =
           """
@@ -237,9 +236,12 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
-              "storedPaymentId": <paymentId>,
+              "token": "<token>",
+              "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
-              "createProfile": false
+              "expirationMonth": 05,
+              "expirationYear": 21,
+              "createProfile": true
             },
             "sendConfirmationEmail": true
           }
@@ -259,11 +261,14 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
     * replace bookRequest.returnOrigin = destination
     * replace bookRequest.returnScheduleUuid = returnScheduleUuid
     * replace bookRequest.total = total
-    * replace bookRequest.paymentId = paymentId
+    * replace bookRequest.token = token
 
     * print bookRequest
 
-    Given path 'book'
+
+#     Given url 'https://api.dev.tdstickets.com/ticketing/'
+#     Given url 'https://api2.stage.tdstickets.com/ticketing/'
+    Given url 'https://api.qa.tdstickets.com/ticketing/book'
     And request bookRequest
     When method post
     Then status 200

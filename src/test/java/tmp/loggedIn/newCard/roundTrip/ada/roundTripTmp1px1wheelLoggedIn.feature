@@ -280,6 +280,8 @@ Feature: Purchase a Round Trip 1 Passenger 1 Wheelchair ticket in TMP Dev/Stage/
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
+              "expirationMonth": 05,
+              "expirationYear": 21,
               "createProfile": true
             },
             "sendConfirmationEmail": true

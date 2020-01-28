@@ -1,12 +1,12 @@
 Feature: Purchase a One Way ticket in Webstore Stage logged in
 
 Background:
-#  * url 'https://api.dev.tdstickets.com/webstore/'
+  * url 'https://api.dev.tdstickets.com/webstore/'
 #  * url 'https://api2.stage.tdstickets.com/webstore/'
-  * url 'https://api.qa.tdstickets.com/webstore/'
+#  * url 'https://api.qa.tdstickets.com/webstore/'
 #  * url 'https://api.trailwaysny.com/webstore/'
-#  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
-  * configure headers = { 'x-agency-id': 'c6ebc417d3ec11e4b6f757d6b72f2478', 'Content-Type': 'application/json'}
+  * configure headers = { 'x-agency-id': 'fb813bbec72711e4b70bcd1b6ee070a1', 'Content-Type': 'application/json'} Dev/Stage
+#  * configure headers = { 'x-agency-id': 'c6ebc417d3ec11e4b6f757d6b72f2478', 'Content-Type': 'application/json'}
 #  * configure headers = { 'x-agency-id': '17cc512e2b6411e8a467abe441b24777', 'Content-Type': 'application/json'}
 #    * configure headers = { 'x-agency-id': '7c15f5050e0f11e58956b71fbc4c05e7', 'Content-Type': 'application/json'} Prod
   * def getDate =
@@ -30,7 +30,13 @@ Background:
     """
   * def tomorrow = getDate("tomorrow")
   * def week = getDate("week")
-  * def today = getDate("today")
+  * def faker = new faker()
+  * def firstName = faker.name().firstName()
+  * def lastName = faker.name().lastName()
+  * def zip = faker.address().zipCode()
+  * def address1 = faker.address().streetAddress()
+  * def city = faker.address().city()
+  * def state = faker.address().stateAbbr()
 
 
 
@@ -118,26 +124,26 @@ Scenario: Oneway Purchase
     "country": "US"
     },
     "accountNumber": "5123456789012346",
-    "securityCode": "123",
+    "securityCode": "000",
     "expirationMonth": "05",
     "expirationYear": "21",
-    "nameOnCard": "Steven Brooks",
-    "address1": "9310 Old Kings Rd",
+    "nameOnCard": "#(faker.name().fullName())",
+    "address1": "3265 Woodmont Drive",
     "address2": "",
-    "city": "Jacksonville",
-    "state": "FL",
-    "postalCode": "32257",
+    "city": "San Jose",
+    "state": "CA",
+    "postalCode": "95118",
     "country": "US",
     "phone": "4084898120",
-    "email": "sbrooks@tdstickets.com",
+    "email": "aeldridge@tdstickets.com",
     "ipAddress": "127.0.0.1",
     "fraudAlgorithm": ""
     }
     """
 
-#  Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+  Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
 #  Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-  Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+#  Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
 #  Given url 'https://upg.tdstickets.com/tokenizer/v1/generate/card'
   And request upg
   When method post
@@ -145,9 +151,9 @@ Scenario: Oneway Purchase
   * def token = response.token
 #  * print token
 
-#  Given url 'https://api.dev.tdstickets.com/webstore/'
+  Given url 'https://api.dev.tdstickets.com/webstore/'
 #  Given url 'https://api2.stage.tdstickets.com/webstore/'
-  Given url 'https://api.qa.tdstickets.com/webstore/'
+#  Given url 'https://api.qa.tdstickets.com/webstore/'
 #  Given url 'https://api.trailwaysny.com/webstore/'
 
   * def bookRequest =
@@ -180,10 +186,9 @@ Scenario: Oneway Purchase
         {
           "ada"			: false,
           "bags"		: 0,
-          "firstName"	: "D",
-          "lastName"	: "One",
-          "type"		: "ADULT",
-          "specialNeed" : "SIGHT_IMPAIRED"
+          "firstName"	: "#(faker.name().firstName())",
+          "lastName"	: "#(faker.name().lastName())",
+          "type"		: "ADULT"
         }
       ],
       "payment": {

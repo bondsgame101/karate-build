@@ -5,7 +5,9 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 #    * url 'https://api2.stage.tdstickets.com/ticketing/'
     * url 'https://api.qa.tdstickets.com/ticketing/'
 #    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} firstParty qa
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '6F820918-50DF-4B76-9ACB-FAF288507CD1', 'Content-Type': 'application/json'} thirdParty BusBud qa
+
     * def getDate =
     """
     function(period) {
@@ -42,11 +44,6 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
     * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
-     Given path 'user/login'
-     And request {}
-     When method post
-     Then status 200
 
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
@@ -208,6 +205,8 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
+              "expirationMonth": 05,
+              "expirationYear": 21,
               "createProfile": true
             },
             "sendConfirmationEmail": true

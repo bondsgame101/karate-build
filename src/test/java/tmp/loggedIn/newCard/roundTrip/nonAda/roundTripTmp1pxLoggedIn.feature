@@ -1,8 +1,8 @@
 Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-#    * url 'https://api.dev.tdstickets.com/ticketing/'
-    * url 'https://api2.stage.tdstickets.com/ticketing/'
+    * url 'https://api.dev.tdstickets.com/ticketing/'
+#    * url 'https://api2.stage.tdstickets.com/ticketing/'
 #    * url 'https://api.qa.tdstickets.com/ticketing/'
     * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
 #    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
@@ -89,13 +89,13 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
 
     * def destinations = response
 #     * print destinations
-    * def condition = function(x){ return x.stationName == 'Amherst UMass' }
+    * def condition = function(x){ return x.stationName == 'Barnstable' }
     * def temp = karate.filter(origins, condition)
     * def destination = temp[0].stopUuid
     * print destination
 
     Given path 'schedule'
-    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(tomorrow)' }
+    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(randomDepart)' }
     When method post
     Then status 200
 
@@ -106,7 +106,7 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
     * print departDate
 
     Given path 'schedule'
-    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(destination)' }, 'destination': { 'stopUuid': '#(origin)' }, 'departDate': '#(week)' }
+    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(destination)' }, 'destination': { 'stopUuid': '#(origin)' }, 'departDate': '#(randomReturn)' }
     When method post
     Then status 200
 
@@ -214,8 +214,8 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
           }
           """
 
-#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
-     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
 #    Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
     And request upg
     When method post
@@ -267,6 +267,8 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
               "token": "<token>",
               "transactionDate": 1559585242396,
               "paymentMethod": "ONLINE",
+              "expirationMonth": 05,
+              "expirationYear": 21,
               "createProfile": true
             },
             "sendConfirmationEmail": true
@@ -292,8 +294,8 @@ Feature: Purchase a Round Trip 1 Passenger ticket in TMP Dev/Stage/QA not logged
     * print bookRequest
 
 
-#     Given url 'https://api.dev.tdstickets.com/ticketing/book'
-     Given url 'https://api2.stage.tdstickets.com/ticketing/book'
+     Given url 'https://api.dev.tdstickets.com/ticketing/book'
+#     Given url 'https://api2.stage.tdstickets.com/ticketing/book'
 #    Given url 'https://api.qa.tdstickets.com/ticketing/book'
     And request bookRequest
     When method post
