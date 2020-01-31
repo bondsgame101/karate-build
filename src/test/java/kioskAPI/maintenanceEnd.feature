@@ -1,15 +1,8 @@
 Feature: End a kiosk in Maintenance mode
 
   Background:
-    * url 'https://accounts.stage.tdstickets.com/auth/realms/qa/protocol/openid-connect/token'
-#    * url 'https://accounts.stage.tdstickets.com/auth/realms/stage/protocol/openid-connect/token'
-    * form field grant_type = 'client_credentials'
-    * form field client_id = 'kiosk'
-    * form field client_secret = 'd507efd5-f4eb-4607-8a05-91495aa8804e'
-    * method post
-    * status 200
-
-    * def accessToken = response.access_token
+    * def keyCloakInfo = { grant_type: 'client_credentials', client_id: 'kiosk',client_secret: 'd507efd5-f4eb-4607-8a05-91495aa8804e' }
+    * call read('classpath:oauth2.feature') keyCloakInfo
     * print accessToken
 
     * url 'https://api.qa.tdstickets.com/kiosk'
@@ -20,6 +13,11 @@ Feature: End a kiosk in Maintenance mode
     Given path 'v1/maintenance/end'
     And request {}
     When method post
-    Then status 200
+    Then assert responseStatus == 200 || responseStatus == 400
 
     * print response
+
+    * def result = responseStatus == 400 ? { 'message': 'This terminal is not currently in maintenance mode'} : karate.abort()
+
+
+

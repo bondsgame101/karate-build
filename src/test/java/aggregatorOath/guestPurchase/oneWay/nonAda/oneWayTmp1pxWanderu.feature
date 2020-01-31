@@ -1,19 +1,8 @@
-Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 1 Passenger ticket with Wanderu aggregator in QA TMP not logged in
 
   Background:
-    * def oauth = call read('classpath:oauth2-auth.js') { grant_type: 'client_credentials', client_id: 'wanderu-carrier-ops', client_secret: 'c5cdefb8-7982-48ad-84cd-354c991b186f' }
-    * print oauth
-    * def token = oauth.response
-    * def accessToken = token.accessToken
-
-#    * url 'https://accounts.stage.tdstickets.com/auth/realms/qa/protocol/openid-connect/token'
-#    * form field grant_type = 'client_credentials'
-#    * form field client_id = 'wanderu-carrier-ops'
-#    * form field client_secret = 'c5cdefb8-7982-48ad-84cd-354c991b186f'
-#    * method post
-#    * status 200
-#
-#    * def accessToken = response.access_token
+    * def keyCloakInfo = { grant_type: 'client_credentials', client_id: 'wanderu-carrier-ops',client_secret: 'c5cdefb8-7982-48ad-84cd-354c991b186f' }
+    * call read('classpath:oauth2.feature') keyCloakInfo
     * print accessToken
 
     * url 'https://api.qa.tdstickets.com/thirdparty/ticketing'
@@ -21,31 +10,6 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
     * def getDate = read('classpath:get-date.js')
 
-#    * def getDate =
-#    """
-#    function(period) {
-#      var SimpleDateFormat = Java.type('java.text.SimpleDateFormat');
-#      var Calendar = Java.type('java.util.Calendar');
-#      var sdf = new SimpleDateFormat('yyyy-MM-dd');
-#      var random_one = Math.floor(Math.random() * 10) + 2;
-#      var random_two = Math.floor(Math.random() * 10) + 12;
-#      cal = Calendar.getInstance();
-#      if (period == "tomorrow") {
-#        cal.add(Calendar.DATE, 1);
-#      }
-#       else if (period == "today") {
-#        cal.add(Calendar.DATE, 0);
-#      }
-#       else if (period == "week") {
-#        cal.add(Calendar.DATE, 7)
-#      } else if (period == "randDepart") {
-#        cal.add(Calendar.DATE, random_one)
-#      } else if (period == "randReturn") {
-#        cal.add(Calendar.DATE, random_two)
-#      }
-#      return sdf.format(cal.getTime());
-#    }
-#    """
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
     * def faker = new faker()
