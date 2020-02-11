@@ -14,10 +14,11 @@ Feature: End a kiosk in Maintenance mode
     And request {}
     When method post
     Then assert responseStatus == 200 || responseStatus == 400
+    * def response = responseStatus == 200 ? {'startAt': '#string'} : {'message': 'This terminal is not currently in maintenance mode'}
+    * match response contains any response
 
     * print response
 
-    * def result = responseStatus == 400 ? { 'message': 'This terminal is not currently in maintenance mode'} : karate.abort()
 
 
 

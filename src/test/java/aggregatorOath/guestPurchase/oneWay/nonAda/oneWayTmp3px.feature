@@ -1,36 +1,14 @@
 Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-#    * url 'https://api.dev.tdstickets.com/ticketing/'
-#    * url 'https://api2.stage.tdstickets.com/ticketing/'
-    * url 'https://api.qa.tdstickets.com/ticketing/'
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
-    * def getDate =
-    """
-    function(period) {
-      var SimpleDateFormat = Java.type('java.text.SimpleDateFormat');
-      var Calendar = Java.type('java.util.Calendar');
-      var sdf = new SimpleDateFormat('yyyy-MM-dd');
-      var random_one = Math.floor(Math.random() * 10) + 2;
-      var random_two = Math.floor(Math.random() * 10) + 12;
-      cal = Calendar.getInstance();
-      if (period == "tomorrow") {
-        cal.add(Calendar.DATE, 1);
-      }
-       else if (period == "today") {
-        cal.add(Calendar.DATE, 0);
-      }
-       else if (period == "week") {
-        cal.add(Calendar.DATE, 7)
-      } else if (period == "randDepart") {
-        cal.add(Calendar.DATE, random_one)
-      } else if (period == "randReturn") {
-        cal.add(Calendar.DATE, random_two)
-      }
-      return sdf.format(cal.getTime());
-    }
-    """
+    * def keyCloakInfo = { grant_type: 'client_credentials', client_id: 'wanderu-carrier-ops',client_secret: 'c5cdefb8-7982-48ad-84cd-354c991b186f' }
+    * call read('classpath:oauth2.feature') keyCloakInfo
+    * print accessToken
+
+    * url 'https://api.qa.tdstickets.com/thirdparty/ticketing'
+    * configure headers = { TDS-Carrier-Code: 'PPB', Authorization: '#("Bearer " + accessToken)', Content-Type: 'application/json'} qa
+    * def getDate = read('classpath:get-date.js')
+
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
     * def faker = new faker()

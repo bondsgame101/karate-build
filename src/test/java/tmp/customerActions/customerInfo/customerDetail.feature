@@ -10,7 +10,11 @@ Feature: Customer Detail
     Given path 'customer/detail'
     And request {}
     When method get
-    Then status 200
+    Then assert responseStatus == 200 || responseStatus == 403
+
+    * if ( responseStatus == 200 ) karate.set('loggedIn', 'Logged In')
+    * if ( responseStatus == 403 ) karate.set('loggedIn', 'Not Logged In')
+    * print loggedIn
 
     * def customerDetail = response
     * print customerDetail

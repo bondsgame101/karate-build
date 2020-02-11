@@ -10,17 +10,16 @@ function fn() {
   }
   var config = {
     env: env,
-	myVarName: 'someValue'
+    myVarName: 'someValue',
+    faker: faker,
+    locale: locale
   };
-  if (env == 'dev'){
-    config.faker = faker;
-    config.locale = locale;
-  } else if (env == 'stage') {
+  if (env === 'stage') {
     config.faker = faker;
     config.locale = locale;
     // customize
     // e.g. config.foo = 'bar';
-  } else if (env == 'e2e') {
+  } else if (env === 'e2e') {
     config.faker = faker;
     config.locale = locale;
     // customize

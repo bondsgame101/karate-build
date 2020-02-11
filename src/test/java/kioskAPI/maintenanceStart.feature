@@ -1,14 +1,8 @@
 Feature: Start Maintenance mode for kiosk
 
   Background:
-    * url 'https://accounts.stage.tdstickets.com/auth/realms/qa/protocol/openid-connect/token'
-    * form field grant_type = 'client_credentials'
-    * form field client_id = 'kiosk'
-    * form field client_secret = 'd507efd5-f4eb-4607-8a05-91495aa8804e'
-    * method post
-    * status 200
-
-    * def accessToken = response.access_token
+    * def keyCloakInfo = { grant_type: 'client_credentials', client_id: 'kiosk',client_secret: 'd507efd5-f4eb-4607-8a05-91495aa8804e' }
+    * call read('classpath:oauth2.feature') keyCloakInfo
     * print accessToken
 
     * url 'https://api.qa.tdstickets.com/kiosk'
@@ -19,8 +13,10 @@ Feature: Start Maintenance mode for kiosk
     """
     function() {
       var SimpleDateFormat = Java.type('java.text.SimpleDateFormat');
+      var Calendar = Java.type('java.util.Calendar');
+      var cal = Calendar.getInstance();
       var sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-      var date = new java.util.Date();
+      var date = cal.getTime();
       return sdf.format(date);
     }
     """

@@ -1,15 +1,16 @@
 Feature: Purchase a One Way 1 Passenger ticket with Wanderu aggregator in QA TMP not logged in
 
   Background:
-    * def keyCloakInfo = { grant_type: 'client_credentials', client_id: 'wanderu-carrier-ops',client_secret: 'c5cdefb8-7982-48ad-84cd-354c991b186f' }
+    * def keyCloakInfo = { grant_type: 'client_credentials', client_id: 'omio',client_secret: '804936bf-d611-4410-94bf-954353161386' }
     * call read('classpath:oauth2.feature') keyCloakInfo
     * print accessToken
 
     * url 'https://api.qa.tdstickets.com/thirdparty/ticketing'
-    * configure headers = { TDS-Carrier-Code: 'PPB', Authorization: '#("Bearer " + accessToken)', Content-Type: 'application/json'} qa
+    * configure headers = { TDS-Carrier-Code: 'ppb', Authorization: '#("Bearer " + accessToken)', Content-Type: 'application/json'} qa
 
     * def getDate = read('classpath:get-date.js')
 
+    * def today = getDate("today")
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
     * def faker = new faker()
@@ -47,7 +48,7 @@ Feature: Purchase a One Way 1 Passenger ticket with Wanderu aggregator in QA TMP
      * print destination
 
      Given path 'schedule'
-     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(tomorrow)' }
+     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(week)' }
      When method post
      Then status 200
 
@@ -179,7 +180,7 @@ Feature: Purchase a One Way 1 Passenger ticket with Wanderu aggregator in QA TMP
               "amount": <total>,
               "token": "<token>",
               "transactionDate": 1559585242396,
-              "paymentMethod": "ONLINE",
+              "paymentMethod": "OFFLINE",
               "expirationMonth": 05,
               "expirationYear": 21,
               "createProfile": true
