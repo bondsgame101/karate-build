@@ -1,7 +1,7 @@
-Feature: Log In
+Feature: Upcoming Trips
 
   Background:
-    #    * url 'https://api.dev.tdstickets.com/ticketing/'
+  #    * url 'https://api.dev.tdstickets.com/ticketing/'
   #    * url 'https://api2.stage.tdstickets.com/ticketing/'
     * url 'https://api.qa.tdstickets.com/ticketing/'
   #    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
@@ -14,26 +14,15 @@ Feature: Log In
     * def address1 = faker.address().streetAddress()
     * def city = faker.address().city()
     * def state = faker.address().stateAbbr()
+    * def mobile = faker.phoneNumber().cellPhone()
 
-  Scenario: Creating a New User
-    * def userCreateRequest =
-    """
-    {
-      "country": {
+    * call read('login.feature')
 
-        "countryId": 1
+  Scenario: Pulling Upcoming Trips
 
-      },
-      "email": "sbrooks+ppb2@tdstickets.com",
-      "firstName": "Steven",
-      "lastName": "Brooks",
-      "mobile": "5555525548",
-      "password": "test1234",
-      "matchingPassword": "test1234"
-    }
-    """
-
-    Given path 'user'
-    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin.origin)' }, 'destination': { 'stopUuid': '#(destination.destination)' }, 'departDate': '#(randomDepart)' }
-    When method post
+    Given path 'customer/trips/upcoming'
+    And request {}
+    When method get
     Then status 200
+
+    * print response

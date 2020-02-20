@@ -1,36 +1,13 @@
 Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA logged in
 
   Background:
-    * url 'https://api.dev.tdstickets.com/ticketing/'
+#    * url 'https://api.dev.tdstickets.com/ticketing/'
 #    * url 'https://api2.stage.tdstickets.com/ticketing/'
-#    * url 'https://api.qa.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
-    * def getDate =
-    """
-    function(period) {
-      var SimpleDateFormat = Java.type('java.text.SimpleDateFormat');
-      var Calendar = Java.type('java.util.Calendar');
-      var sdf = new SimpleDateFormat('yyyy-MM-dd');
-      var random_one = Math.floor(Math.random() * 10) + 2;
-      var random_two = Math.floor(Math.random() * 10) + 12;
-      cal = Calendar.getInstance();
-      if (period == "tomorrow") {
-        cal.add(Calendar.DATE, 1);
-      }
-       else if (period == "today") {
-        cal.add(Calendar.DATE, 0);
-      }
-       else if (period == "week") {
-        cal.add(Calendar.DATE, 7)
-      } else if (period == "randDepart") {
-        cal.add(Calendar.DATE, random_one)
-      } else if (period == "randReturn") {
-        cal.add(Calendar.DATE, random_two)
-      }
-      return sdf.format(cal.getTime());
-    }
-    """
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
+    * def getDate = read('classpath:get-date.js')
+
     * def getRandomInt =
     """
     function(max) {
@@ -60,8 +37,8 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA logged in
     * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' } dev/stage
-#     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' } qa
+#     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' } dev/stage
+     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' } qa
      Given path 'user/login'
      And request {}
      When method post
@@ -182,18 +159,18 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA logged in
           }
           """
 
-     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
 #     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-#     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
      * def token = response.token
      * print token
 
-     Given url 'https://api.dev.tdstickets.com/ticketing/'
+#     Given url 'https://api.dev.tdstickets.com/ticketing/'
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-#     Given url 'https://api.qa.tdstickets.com/ticketing/'
+     Given url 'https://api.qa.tdstickets.com/ticketing/'
 
      * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
      * def passengers = karate.repeat(1, passengerJson)

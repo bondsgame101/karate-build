@@ -178,12 +178,7 @@ Feature: Purchase a One Way 1 Passenger ticket with Wanderu aggregator in QA TMP
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
-              "token": "<token>",
-              "transactionDate": 1559585242396,
               "paymentMethod": "OFFLINE",
-              "expirationMonth": 05,
-              "expirationYear": 21,
-              "createProfile": true
             },
             "sendConfirmationEmail": true
           }

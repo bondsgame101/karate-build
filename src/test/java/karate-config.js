@@ -1,6 +1,6 @@
 function fn() {    
   var env = karate.env; // get system property 'karate.env'
-  var locale = Java.type('java.util.Locale')
+  var locale = Java.type('java.util.Locale');
   var faker = Java.type('com.github.javafaker.Faker');
 
 

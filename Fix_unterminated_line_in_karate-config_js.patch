@@ -1,0 +1,15 @@
+Index: src/test/java/karate-config.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/karate-config.js	(revision 26ecbb04dc3f1506b49cf408253132906efb1586)
++++ src/test/java/karate-config.js	(date 1581433426348)
+@@ -1,6 +1,6 @@
+ function fn() {    
+   var env = karate.env; // get system property 'karate.env'
+-  var locale = Java.type('java.util.Locale')
++  var locale = Java.type('java.util.Locale');
+   var faker = Java.type('com.github.javafaker.Faker');
+ 
+ 

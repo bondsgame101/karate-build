@@ -14,9 +14,11 @@ Feature: Log In
     Given path 'user/login'
     And request {}
     When method post
+    Then status 200
 
     * def loggedIn = responseStatus == 200
     * print loggedIn
-    * if (loggedIn) karate.call('customerDetail.feature')
+    * call read('customerDetail.feature')
+#    * print customerId
 
 

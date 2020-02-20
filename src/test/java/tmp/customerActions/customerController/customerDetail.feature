@@ -17,4 +17,6 @@ Feature: Customer Detail
     * print loggedIn
 
     * def customerDetail = response
-    * print customerDetail
+#    * print customerDetail
+    * def customerId = customerDetail.customerId
+#    * print customerId

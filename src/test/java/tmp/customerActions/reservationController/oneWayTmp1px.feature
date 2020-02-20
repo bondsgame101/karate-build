@@ -1,33 +1,17 @@
-Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
     * url 'https://api2.stage.tdstickets.com/ticketing/'
 #    * url 'https://api.qa.tdstickets.com/ticketing/'
     * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} qa
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} firstParty qa
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '6F820918-50DF-4B76-9ACB-FAF288507CD1', 'Content-Type': 'application/json'} thirdParty BusBud qa
+
     * def getDate = read('classpath:get-date.js')
 
-    * def getRandomInt =
-    """
-    function(max) {
-        return Math.floor(Math.random() * Math.floor(max));
-    }
-    """
-
-    * def randomSchedule =
-     """
-     function(list) {
-       var random = getRandomInt(list.length)
-       return list[random]
-     }
-     """
-
-    * def today = getDate("today")
     * def tomorrow = getDate("tomorrow")
     * def week = getDate("week")
-    * def randomDepart = getDate("randDepart")
-    * def randomReturn = getDate("randReturn")
     * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
@@ -37,11 +21,6 @@ Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
     * def state = faker.address().stateAbbr()
 
    Scenario: A full purchase in TMP Dev
-     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb@tdstickets.com', password: 'test1234' }
-     Given path 'user/login'
-     And request {}
-     When method post
-     Then status 200
 
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
@@ -103,11 +82,11 @@ Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 3
-            },
-          "promoCode": "15off"
+            "Adult": 1
+            }
          }
          """
+
      * set availabilityRequest.buyer.address1 = address1
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
@@ -172,7 +151,7 @@ Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
 #     Given url 'https://api.qa.tdstickets.com/ticketing/'
 
      * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
-     * def passengers = karate.repeat(3, passengerJson)
+     * def passengers = karate.repeat(1, passengerJson)
 
      * def bookRequest =
           """
@@ -207,8 +186,7 @@ Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
               "expirationYear": 21,
               "createProfile": true
             },
-            "sendConfirmationEmail": true,
-          "promoCode": "15off"
+            "sendConfirmationEmail": true
           }
           """
 
@@ -224,12 +202,18 @@ Feature: Purchase a One Way 3 Passenger ticket in TMP Dev/Stage/QA not logged in
      * replace bookRequest.total = total
      * replace bookRequest.token = token
 
+     * print 'Your request is:', bookRequest
+     * def reservation = bookRequest
+     * print reservation
+
      Given path 'book'
      And request bookRequest
      When method post
      Then status 200
 
-     * def book = response
-     * print book
+
+
+     * def confirmationCode = response.confirmationCode
+     * print confirmationCode
 
 
