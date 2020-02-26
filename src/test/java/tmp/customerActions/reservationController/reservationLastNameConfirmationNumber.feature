@@ -1,7 +1,7 @@
 Feature: Testing Reservation endpoint with Confirmation Number and Last Name
 
   Background:
-    * url 'https://api.dev.tdstickets.com/ticketing/'
+    * url 'https://api2.stage.tdstickets.com/ticketing/'
 #    * configure headers = { TDS-Carrier-Code: 'ppb', Authorization: '#("Bearer " + accessToken)', Content-Type: 'application/json'} qa
 #
 #    * def getDate = read('classpath:get-date.js')

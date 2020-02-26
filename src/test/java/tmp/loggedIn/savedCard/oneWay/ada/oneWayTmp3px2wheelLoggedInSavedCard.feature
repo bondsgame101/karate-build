@@ -1,17 +1,33 @@
-Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
+Feature: Purchase a One Way 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/QA not logged in
 
   Background:
 #    * url 'https://api.dev.tdstickets.com/ticketing/'
-    * url 'https://api2.stage.tdstickets.com/ticketing/'
-#    * url 'https://api.qa.tdstickets.com/ticketing/'
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} firstParty qa
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '6F820918-50DF-4B76-9ACB-FAF288507CD1', 'Content-Type': 'application/json'} thirdParty BusBud qa
-
+#    * url 'https://api2.stage.tdstickets.com/ticketing/'
+    * url 'https://api.qa.tdstickets.com/ticketing/'
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'}
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'}
     * def getDate = read('classpath:get-date.js')
 
-    * def tomorrow = getDate("tomorrow")
-    * def week = getDate("week")
+     * def getRandomInt =
+    """
+    function(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+    """
+
+     * def randomSchedule =
+     """
+     function(list) {
+       var random = getRandomInt(list.length)
+       return list[random]
+     }
+     """
+
+     * def today = getDate("today")
+     * def tomorrow = getDate("tomorrow")
+     * def week = getDate("week")
+     * def randomDepart = getDate("randDepart")
+     * def randomReturn = getDate("randReturn")
     * def faker = new faker()
     * def firstName = faker.name().firstName()
     * def lastName = faker.name().lastName()
@@ -20,7 +36,13 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
     * def city = faker.address().city()
     * def state = faker.address().stateAbbr()
 
-   Scenario: A full purchase in TMP Dev
+
+  Scenario: A full purchase in TMP Dev
+     * header Authorization = call read('classpath:basic-auth.js') { username: 'sbrooks+ppb1@tdstickets.com', password: 'test1234' }
+     Given path 'user/login'
+     And request {}
+     When method post
+     Then status 200
 
      Given path 'stop'
      And request { 'carrierId': 1, 'type': 'ORIGIN' }
@@ -29,7 +51,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
      * def origins = response
 #     * print origins
-     * def condition = function(x){ return x.stationName == 'Boston (South Station)' }
+     * def condition = function(x){ return x.stationName == 'Bourne' }
      * def temp = karate.filter(origins, condition)
      * def origin = temp[0].stopUuid
      * print origin
@@ -46,31 +68,43 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
      * def destination = temp[0].stopUuid
      * print destination
 
-     Given path 'schedule'
-     And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(tomorrow)' }
-     When method post
+    Given path 'schedule'
+    And request { 'carrierId': 1, 'origin': { 'stopUuid': '#(origin)' }, 'destination': { 'stopUuid': '#(destination)' }, 'departDate': '#(randomDepart)' }
+    When method post
+    Then status 200
+
+    * def schedules = response
+    * def selectedSchedule = randomSchedule(schedules)
+    * print selectedSchedule
+    * def scheduleUuid = selectedSchedule.scheduleUuid
+    * def departDate = selectedSchedule.departTime.substring(0, selectedSchedule.departTime.lastIndexOf('T'))
+    * print scheduleUuid
+    * print departDate
+
+     Given path 'passenger/ada/options/1'
+     And request {}
+     When method get
      Then status 200
 
-     * def schedules = response
-#     * print schedules[0]
-     * def scheduleUuid = schedules[0].scheduleUuid
-     * def departDate = schedules[0].departTime.substring(0, schedules[0].departTime.lastIndexOf('T'))
-#     * def departDate = schedules[0].departTime
-     * print scheduleUuid
-     * print departDate
+     * def adaOptions = response
+     * print adaOptions[0]
+     * json ada = adaOptions[0]
 
      * def availabilityRequest =
          """
          {
+          "adaOptions":
+           "<adaOptions>"
+          ,
           "outbound": {
              "carrierId": 1,
-             "scheduleUuid": "<scheduleUuid>",
-             "departDate": "<departDate>",
+             "scheduleUuid": <scheduleUuid>,
+             "departDate": <departDate>,
              "origin": {
                 "stopUuid": "<origin>"
             },
           "destination": {
-                "stopUuid": "<destination>"
+                "stopUuid": <destination>
             },
              "occurrence": 1
             },
@@ -82,15 +116,15 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
             "mobile": "(908) 789-1234"
           },
           "passengerCounts": {
-            "Adult": 1
+            "Adult": 3
             }
          }
          """
-
      * set availabilityRequest.buyer.address1 = address1
      * set availabilityRequest.buyer.city = city
      * set availabilityRequest.buyer.state = state
      * set availabilityRequest.buyer.zip = zip
+     * set availabilityRequest.adaOptions[0] = ada
      * replace availabilityRequest.departDate = departDate
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
@@ -110,48 +144,21 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
      * print outboundFares
      * def total = availability.total
 
-     * def upg =
-          """
-          {
-           "agency" :
-           {
-               "gateway": "AUTHORIZE",
-               "agency": "4249",
-               "country": "US"
-           },
-             "accountNumber": "5123456789012346",
-             "securityCode": "123",
-             "expirationMonth": "05",
-             "expirationYear": "21",
-             "nameOnCard": "#(faker.name().fullName())",
-             "address1": "9310 Old Kings Rd., Ste 401",
-             "address2": "",
-             "city": "Jacksonville",
-             "state": "FL",
-             "postalCode": "32257",
-             "country": "US",
-             "phone": "5555546855",
-             "email": "sbrooks@tdstickets.com",
-             "ipAddress": "127.0.0.1",
-             "fraudAlgorithm": ""
-          }
-          """
-
-#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
-     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-#     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
-     And request upg
-     When method post
+     Given path 'customer/payment/stored'
+     And request {}
+     When method get
      Then status 200
-     * def token = response.token
-     * print token
 
-#     Given url 'https://api.dev.tdstickets.com/ticketing/'
-     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-#     Given url 'https://api.qa.tdstickets.com/ticketing/'
+     * def storedCards = response
+     * print storedCards[0].storedPaymentId
+     * def paymentId = storedCards[0].storedPaymentId
 
-     * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
-     * def passengers = karate.repeat(1, passengerJson)
+    * def adaPassengerJson = function(i){ return { 'adaOptions': [ada], 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+    * def adaPassengers = karate.repeat(2, adaPassengerJson)
+    * def regPassengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
+    * def regPassengers = karate.repeat(1, regPassengerJson)
+    * def passengers = karate.append(adaPassengers, regPassengers)
+     * print passengers
 
      * def bookRequest =
           """
@@ -179,12 +186,9 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
             "paymentInfo": {
               "country": "US",
               "amount": <total>,
-              "token": "<token>",
-              "transactionDate": 1559585242396,
+              "storedPaymentId": <paymentId>,
               "paymentMethod": "ONLINE",
-              "expirationMonth": 05,
-              "expirationYear": 21,
-              "createProfile": true
+              "createProfile": false
             },
             "sendConfirmationEmail": true
           }
@@ -200,20 +204,28 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
      * replace bookRequest.destination = destination
      * replace bookRequest.origin = origin
      * replace bookRequest.total = total
-     * replace bookRequest.token = token
+     * replace bookRequest.paymentId = paymentId
 
-     * print 'Your request is:', bookRequest
-     * def reservation = bookRequest
-     * print reservation
+     * print bookRequest
 
      Given path 'book'
      And request bookRequest
      When method post
-     Then status 200
+     Then status 400
 
+     * def book = response
+     * print book
+    * def confirmationCode = book.confirmationCode
 
+    Given path 'reservation/'
+    And path confirmationCode
+    When method get
+    Then status 200
 
-     * def confirmationCode = response.confirmationCode
-     * print confirmationCode
+    * def reservation = response
+    * def confirmationNumber = reservation.confirmationNumber
+    * def lastName = reservation.receipt.lastName
+
+    * print reservation
 
 

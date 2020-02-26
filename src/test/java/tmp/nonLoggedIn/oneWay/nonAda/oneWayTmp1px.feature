@@ -1,12 +1,12 @@
 Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
   Background:
-#    * url 'https://api.dev.tdstickets.com/ticketing/'
+    * url 'https://api.dev.tdstickets.com/ticketing/'
 #    * url 'https://api2.stage.tdstickets.com/ticketing/'
-    * url 'https://api.qa.tdstickets.com/ticketing/'
-#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
+#    * url 'https://api.qa.tdstickets.com/ticketing/'
+    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '11033144-1420-4DAA-81EC-B62BA29EC6C2', 'Content-Type': 'application/json'} dev/stage
 #    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '491ACBF0-9020-4471-984F-57772F1CE9C7', 'Content-Type': 'application/json'} firstParty qa
-    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '6F820918-50DF-4B76-9ACB-FAF288507CD1', 'Content-Type': 'application/json'} thirdParty BusBud qa
+#    * configure headers = { 'TDS-Carrier-Code': 'PPB', 'TDS-Api-Key': '6F820918-50DF-4B76-9ACB-FAF288507CD1', 'Content-Type': 'application/json'} thirdParty BusBud qa
 
     * def getDate = read('classpath:get-date.js')
 
@@ -137,18 +137,18 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
           }
           """
 
-#     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
+     Given url 'https://upg.dev.tdstickets.com/tokenizer/v1/generate/card'
 #     Given url 'https://upg.stage.tdstickets.com/tokenizer/v1/generate/card'
-     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
+#     Given url 'https://upg.qa.tdstickets.com/tokenizer/v1/generate/card'
      And request upg
      When method post
      Then status 200
      * def token = response.token
      * print token
 
-#     Given url 'https://api.dev.tdstickets.com/ticketing/'
+     Given url 'https://api.dev.tdstickets.com/ticketing/'
 #     Given url 'https://api2.stage.tdstickets.com/ticketing/'
-     Given url 'https://api.qa.tdstickets.com/ticketing/'
+#     Given url 'https://api.qa.tdstickets.com/ticketing/'
 
      * def passengerJson = function(i){ return { 'firstName': faker.name().firstName(), 'lastName': faker.name().lastName(), 'email': 'sbrooks@tdstickets.com', 'type': 'Adult', 'outboundFare': outboundFares }}
      * def passengers = karate.repeat(1, passengerJson)
@@ -209,5 +209,7 @@ Feature: Purchase a One Way 1 Passenger ticket in TMP Dev/Stage/QA not logged in
 
      * def book = response
      * print book
+
+     * def confirmationCode = book.confirmationCode
 
 

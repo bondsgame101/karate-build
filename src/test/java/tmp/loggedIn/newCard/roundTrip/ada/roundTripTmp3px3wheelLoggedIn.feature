@@ -155,6 +155,10 @@ Feature: Purchase a Round Trip 3 Passenger 3 Wheelchair ticket in TMP Dev/Stage/
      * replace availabilityRequest.destination = destination
      * replace availabilityRequest.origin = origin
      * replace availabilityRequest.scheduleUuid = scheduleUuid
+    * replace availabilityRequest.returnDepartDate = returnDepartDate
+    * replace availabilityRequest.returnDestination = origin
+    * replace availabilityRequest.returnOrigin = destination
+    * replace availabilityRequest.returnScheduleUuid = returnScheduleUuid
 
      * print availabilityRequest
 

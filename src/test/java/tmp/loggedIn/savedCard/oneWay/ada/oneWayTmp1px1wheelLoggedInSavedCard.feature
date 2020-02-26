@@ -208,5 +208,17 @@ Feature: Purchase a One Way 1 Passenger 1 Wheelchair ticket in TMP Dev/Stage/QA 
 
      * def book = response
      * print book
+     * def confirmationCode = book.confirmationCode
+
+     Given path 'reservation/'
+     And path confirmationCode
+     When method get
+     Then status 200
+
+     * def reservation = response
+     * def confirmationNumber = reservation.confirmationNumber
+     * def lastName = reservation.receipt.lastName
+
+     * print reservation
 
 
